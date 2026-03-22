@@ -9,11 +9,13 @@ import { motion } from 'motion/react';
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Sample login logic: just redirect to dashboard
+    // Set an authentication cookie for 1 day
+    document.cookie = "dorbar_auth=true; path=/; max-age=86400";
     router.push('/dashboard');
   };
 
@@ -65,8 +67,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Account</h1>
-          <p className="text-slate-500 text-sm mb-8">Your connections are just a few steps away.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{isLogin ? "Welcome Back" : "Create Account"}</h1>
+          <p className="text-slate-500 text-sm mb-8">{isLogin ? "Enter your credentials to access your account." : "Your connections are just a few steps away."}</p>
 
           {/* Social Logins */}
           <div className="flex gap-4 mb-6">
@@ -87,19 +89,21 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px bg-slate-200 flex-1"></div>
-            <span className="text-xs text-slate-400 font-medium">Or Signup with</span>
+            <span className="text-xs text-slate-400 font-medium">{isLogin ? "Or Sign in with" : "Or Sign up with"}</span>
             <div className="h-px bg-slate-200 flex-1"></div>
           </div>
 
           {/* Form */}
           <form className="flex flex-col gap-4" onSubmit={handleLogin}>
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Full name" 
-                className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
-              />
-            </div>
+            {!isLogin && (
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Full name" 
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                />
+              </div>
+            )}
             <div className="relative">
               <input 
                 type="email" 
@@ -121,32 +125,37 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <div className="relative">
-              <input 
-                type={showConfirmPassword ? "text" : "password"} 
-                placeholder="Confirm password" 
-                className="w-full h-12 pl-4 pr-12 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
-              />
-              <button 
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            {!isLogin && (
+              <div className="relative">
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  placeholder="Confirm password" 
+                  className="w-full h-12 pl-4 pr-12 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            )}
 
             <button 
               type="submit"
               className="w-full h-12 mt-2 bg-[#5A67D8] hover:bg-[#4C51BF] text-white font-medium rounded-xl transition-colors shadow-md shadow-indigo-500/20"
             >
-              Sign Up
+              {isLogin ? "Sign In" : "Sign Up"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-500">
-              Already have an account? <Link href="/login" className="text-[#5A67D8] font-semibold hover:underline">Sign In</Link>
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-[#5A67D8] font-semibold hover:underline">
+                {isLogin ? "Sign Up" : "Sign In"}
+              </button>
             </p>
           </div>
 

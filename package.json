@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "clean": "next clean"
   },
   "dependencies": {
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/geolocation": "^8.1.0",
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-slot": "^1.2.4",
@@ -23,15 +25,18 @@
     "motion": "^12.38.0",
     "next": "^15.4.9",
     "next-pwa": "^5.6.0",
+    "page-flip": "^2.0.7",
     "postcss": "^8.5.6",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hook-form": "^7.71.2",
+    "react-pageflip": "^2.0.3",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.2.0",
     "@tailwindcss/postcss": "4.1.11",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
