@@ -23,7 +23,7 @@ export default function Dashboard() {
       <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
         {/* User Greeting */}
         <div className="px-6 py-4 flex items-center gap-4">
-          <Image src="https://i.pravatar.cc/150?img=11" alt="User" width={48} height={48} className="rounded-full border-2 border-white shadow-sm" />
+          <Image src="/darbar image.jpg" alt="User" width={48} height={48} className="rounded-full border-2 border-white shadow-sm" />
           <div>
             <h2 className="font-semibold text-lg">Assalamu Alaikum, FH Avro</h2>
             <p className="text-sm text-gray-500 flex items-center gap-1">Dhaka, BD <span className="text-yellow-500">🌙</span></p>
@@ -52,7 +52,7 @@ export default function Dashboard() {
           </Link>
           <Link href="/tasbih" className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100">
             <div className="w-6 h-6 text-blue-500 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
             </div>
             <span className="text-xs font-medium">Tasbih</span>
           </Link>

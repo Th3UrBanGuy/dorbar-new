@@ -1,12 +1,13 @@
-import { ChevronLeft, Share2, BookmarkPlus, BookHeart, Grid, BookOpen } from "lucide-react";
+import { ChevronLeft, BookHeart, Grid, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { HadithItemList } from "@/components/HadithItemList";
 import { transliterateArabicToBengali } from "@/lib/arabic-to-bengali";
 
 interface HadithData {
   hadithnumber: number;
   arabicText: string;
-  bengaliPhonetic?: string;
+  bengaliPhonetic: string;
   bengaliText: string;
   reference: {
     book: number;
@@ -26,25 +27,17 @@ const COLLECTION_NAMES: Record<string, { en: string, ar: string }> = {
 
 export default async function HadithReaderPage(props: {
   params: Promise<{ collection: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const searchParams = await props.searchParams;
   const params = await props.params;
   
   const collectionId = params.collection;
   const titles = COLLECTION_NAMES[collectionId] || { en: "Hadith Collection", ar: "الحديث" };
-  
-  // Pagination parsing
-  const pageParam = searchParams?.page;
-  const page = typeof pageParam === 'string' ? parseInt(pageParam, 10) : 1;
-  const ITEMS_PER_PAGE = 20;
 
   let hadiths: HadithData[] = [];
   let totalHadiths = 0;
   let error = null;
 
   try {
-    // SSR Fetch: Executes strictly on the Next.js server. Extremely fast.
     const [arRes, bnRes] = await Promise.all([
       fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-${collectionId}.json`, { next: { revalidate: 3600 * 24 } }),
       fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ben-${collectionId}.json`, { next: { revalidate: 3600 * 24 } })
@@ -58,14 +51,9 @@ export default async function HadithReaderPage(props: {
     if (arData.hadiths && bnData.hadiths) {
       totalHadiths = arData.hadiths.length;
       
-      // Slice exactly the requested page data BEFORE mapping, saving immense processing time
-      const startIndex = (page - 1) * ITEMS_PER_PAGE;
-      const endIndex = page * ITEMS_PER_PAGE;
-      const arPageData = arData.hadiths.slice(startIndex, endIndex);
-      
-      hadiths = arPageData.map((arHadith: any, index: number) => {
-        const absoluteIndex = startIndex + index;
-        const bnHadith = bnData.hadiths[absoluteIndex];
+      // Map ALL hadiths — LazyList handles progressive rendering on the client
+      hadiths = arData.hadiths.map((arHadith: any, index: number) => {
+        const bnHadith = bnData.hadiths[index];
         return {
           hadithnumber: arHadith.hadithnumber,
           arabicText: arHadith.text,
@@ -82,15 +70,14 @@ export default async function HadithReaderPage(props: {
     error = "Error fetching hadith data or collections are missing.";
   }
 
-  const totalPages = Math.ceil(totalHadiths / ITEMS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-[#F4F7FB] flex font-sans text-slate-800 selection:bg-emerald-200">
       
       {/* Sidebar Stub */}
       <aside className="hidden md:flex flex-col w-24 bg-[#F4F7FB] items-center py-8 gap-10 sticky top-0 h-screen overflow-y-auto shrink-0 border-r border-slate-200/50">
-        <Link href="/" className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-          <BookHeart className="w-6 h-6" />
+        <Link href="/" className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
+          <Image src="/image.png" alt="Logo" fill className="object-cover" />
         </Link>
         <nav className="flex flex-col gap-8 flex-1 w-full items-center mt-4">
           <Link href="/hadith" className="text-emerald-500 relative flex justify-center w-full">
@@ -130,83 +117,7 @@ export default async function HadithReaderPage(props: {
             {error ? (
               <div className="bg-red-50 text-red-500 p-4 rounded-xl font-medium">{error}</div>
             ) : (
-              hadiths.map((hadith) => (
-                <div
-                  key={hadith.hadithnumber}
-                  className="group relative bg-white border border-slate-100 p-6 sm:p-8 rounded-[2rem] shadow-sm hover:shadow-md hover:border-emerald-100 transition-all"
-                >
-                  {/* Actions/Numbering */}
-                  <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-emerald-50 text-emerald-600">
-                        {hadith.hadithnumber}
-                      </div>
-                      {hadith.reference && hadith.reference.book > 0 && (
-                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                          Book {hadith.reference.book}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors">
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors">
-                        <BookmarkPlus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 1. Arabic Text */}
-                  <div className="mb-8 pl-4 sm:pl-10">
-                    <p 
-                      className="text-2xl sm:text-3xl font-arabic leading-[1.8] text-right text-slate-800" 
-                      dir="rtl"
-                    >
-                      {hadith.arabicText}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    {/* 2. Phonetic Transliteration Box */}
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Bangla Uccharon (Phonetic)</h4>
-                      <p className="text-base text-slate-600 font-medium italic font-bengali leading-relaxed">
-                        {hadith.bengaliPhonetic}
-                      </p>
-                    </div>
-
-                    {/* 3. Bengali Translation (Meaning) */}
-                    <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                      <h4 className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider mb-2">Meaning (Bangla)</h4>
-                      <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-bengali">
-                        {hadith.bengaliText}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-
-            {/* Pagination Controls */}
-            {!error && totalHadiths > 0 && (
-              <div className="flex items-center justify-between border-t border-slate-100 pt-8 mt-4 pb-12">
-                 <Link href={`/hadith/${collectionId}?page=${Math.max(1, page - 1)}`} className={page === 1 ? 'pointer-events-none opacity-50' : ''}>
-                   <Button variant="outline" className="rounded-full border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200">
-                     <ChevronLeft className="w-4 h-4 mr-1" /> Previous Page
-                   </Button>
-                 </Link>
-
-                 <div className="text-sm font-bold text-slate-500">
-                   Page {page} <span className="text-slate-300 font-normal">of</span> {totalPages}
-                 </div>
-
-                 <Link href={`/hadith/${collectionId}?page=${Math.min(totalPages, page + 1)}`} className={page === totalPages ? 'pointer-events-none opacity-50' : ''}>
-                   <Button variant="outline" className="rounded-full border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200">
-                     Next Page <ChevronLeft className="w-4 h-4 ml-1 rotate-180" />
-                   </Button>
-                 </Link>
-              </div>
+              <HadithItemList hadiths={hadiths} />
             )}
             
           </div>

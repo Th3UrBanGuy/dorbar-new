@@ -168,7 +168,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-4 gap-y-5 xs:gap-y-6 gap-x-2">
                 {[
                   { name: "Quran", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50", href: "/quran" },
-                  { name: "Hijri", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/calendar" },
+                  { name: "Calendar", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/calendar" },
                   { name: "Qibla", icon: Compass, color: "text-amber-600", bg: "bg-amber-50", href: "/dashboard/qibla" },
                   { name: "Tasbeeh", icon: Clock, color: "text-purple-600", bg: "bg-purple-50", href: "/tasbih" },
                   { name: "Kalam", icon: Music, color: "text-rose-600", bg: "bg-rose-50", href: "/kalam" },

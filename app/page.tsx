@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bookmark, Phone, ArrowUpRight, Share, MapPin, BookOpen, BookHeart, Compass } from "lucide-react";
+import { ArrowUpRight, MapPin, BookOpen, BookHeart, Compass } from "lucide-react";
 
 export default function Home() {
   return (
@@ -15,10 +15,13 @@ export default function Home() {
       <main className="flex-1 flex flex-col max-w-[1400px] mx-auto w-full px-6 lg:px-12 pt-16 lg:pt-24 pb-20 relative z-10">
 
         {/* Title Section */}
-        <div className="mb-8 pl-2">
-          <h1 className="text-4xl md:text-5xl font-medium text-slate-800 tracking-tight">
-            Khijiriya Chishtiya Darbar Sharif
+        <div className="mb-10 pl-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 tracking-tight leading-tight">
+            খিজিরিয়া চিশতিয়া ভান্ডার
           </h1>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-emerald-700 tracking-tight mt-1">
+            দরবার শরীফ
+          </h2>
         </div>
 
         {/* Hero Grid Container */}
@@ -28,7 +31,7 @@ export default function Home() {
           <div className="lg:col-span-8 relative h-[350px] sm:h-[450px] lg:h-[600px] rounded-[2rem] overflow-hidden shadow-sm group">
             {/* We use a beautiful architecture/mosque placeholder image */}
             <Image
-              src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=1600"
+              src="/darbar image.jpg"
               alt="Khijiriya Chishtiya Darbar Sharif"
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -43,69 +46,65 @@ export default function Home() {
           <div className="lg:col-span-4 bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 flex flex-col h-full">
 
             {/* Address & Action */}
-            <div className="flex justify-between items-start mb-8">
+            <div className="flex justify-between items-start mb-6">
               <div className="space-y-1">
                 <h3 className="text-slate-800 text-lg font-medium leading-snug">
-                  Darbar-ul-Nur Central,<br />
-                  Dhaka, Bangladesh 1212
+                  খিজিরিয়া চিশতিয়া ভান্ডার<br />দরবার শরীফ
                 </h3>
+                <p className="text-sm text-slate-500">ফকিরখীল, পাইন্দং</p>
               </div>
-              <button className="text-slate-400 hover:text-slate-800 transition-colors p-2 hover:bg-slate-50 rounded-full">
-                <Bookmark className="w-5 h-5 flex-shrink-0" />
-              </button>
+              <a
+                href="https://maps.app.goo.gl/UNc8vtUPrXN5kHY96"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-emerald-600 transition-colors p-2 hover:bg-emerald-50 rounded-full"
+                title="Google Maps এ দেখুন"
+              >
+                <MapPin className="w-5 h-5 flex-shrink-0" />
+              </a>
             </div>
 
-            {/* Stats Separator Series */}
-            <div className="flex justify-between items-end mb-8 gap-1 pr-1 overflow-x-auto hide-scrollbar sm:overflow-visible">
-              <div className="flex flex-col shrink-0">
-                <span className="text-xl sm:text-2xl font-bold text-slate-900 leading-none mb-1">Daily</span>
-                <span className="text-[10px] sm:text-sm text-slate-500">Majlis</span>
-              </div>
-              <div className="flex flex-col items-center shrink-0">
-                <span className="text-xl sm:text-2xl font-bold text-slate-900 leading-none mb-1">24/7</span>
-                <span className="text-[10px] sm:text-sm text-slate-500">Access</span>
-              </div>
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-xl sm:text-2xl font-bold text-slate-900 leading-none mb-1">10k+</span>
-                <span className="text-[10px] sm:text-sm text-slate-500">Followers</span>
-              </div>
+
+
+            {/* Description */}
+            <div className="mb-6 pb-6 border-b border-slate-100">
+              <p className="text-sm text-slate-600 leading-relaxed">
+                এই দরবার শরীফে রয়েছে <span className="font-semibold text-emerald-700">খাজা গরীবে নেওয়াজ মঈনউদ্দিন চিশতী (রহ.)</span> এর পবিত্র খানকা শরীফ এবং নবী ও অলী জ্ঞানের ভান্ডার <span className="font-semibold text-emerald-700">খাজা খোয়াজ খিজির (আ.)</span> এর মসজিদ।
+              </p>
+              <a
+                href="https://maps.app.goo.gl/UNc8vtUPrXN5kHY96"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-3 px-4 py-2 border border-slate-200 rounded-full text-sm font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+              >
+                <MapPin className="w-3.5 h-3.5" /> ম্যাপে দেখুন <ArrowUpRight className="w-3 h-3" />
+              </a>
             </div>
 
-            {/* Pricing / Status row */}
-            <div className="flex items-center justify-between mb-8 pb-8 border-b border-slate-100">
-              <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Free Entry</h2>
-              <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-full text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                View schedule <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Agent / Contact Section */}
-            <div className="mt-auto mb-6 bg-[#FAFAFA] rounded-2xl p-4 flex items-center justify-between border border-slate-100/50 hover:border-slate-200 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 relative">
-                  <Image
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"
-                    alt="Khadem"
-                    fill
-                    className="object-cover"
-                  />
+            {/* Pir Saheb / Contact Section */}
+            <Link href="/pir-saheb" className="block mb-6 bg-[#FAFAFA] rounded-2xl p-4 hover:bg-emerald-50/50 transition-colors border border-slate-100/50 hover:border-emerald-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-200 relative bg-emerald-100 flex items-center justify-center">
+                    <span className="text-lg font-bold text-emerald-700">ই</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-emerald-600 font-medium uppercase tracking-wider mb-0.5">পীর সাহেব</span>
+                    <span className="text-sm font-bold text-slate-800">হাফেজ মো ইউসুফ</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Head Khadem</span>
-                  <span className="text-sm font-bold text-slate-800">Abdullah Al Mahdi</span>
-                </div>
+                <span className="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600">
+                  বিস্তারিত →
+                </span>
               </div>
-              <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                Contact
-              </button>
-            </div>
+            </Link>
 
-            {/* Primary Action Button (Matches the Black Request Tour button) */}
+            {/* Primary Action Button */}
             <Link href="/login" className="block w-full text-center">
               <button className="w-full bg-[#1A1A1A] hover:bg-black text-white rounded-full py-4 px-6 font-medium transition-all shadow-lg shadow-black/10 active:scale-[0.98] group">
-                <span className="block text-base mb-0.5">Enter Portal Dashboard</span>
+                <span className="block text-base mb-0.5">পোর্টাল ড্যাশবোর্ড</span>
                 <span className="block text-[11px] text-white/50 font-normal group-hover:text-white/70 transition-colors">
-                  Available 24/7 on all devices
+                  Enter Portal Dashboard
                 </span>
               </button>
             </Link>

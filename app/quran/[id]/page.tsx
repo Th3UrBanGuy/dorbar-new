@@ -1,5 +1,7 @@
-import { ChevronLeft, BookOpen, Volume2, Info, Heart, Grid, BookHeart } from "lucide-react";
+import { ChevronLeft, BookOpen, Info, Grid, BookHeart } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { QuranAyahList } from "@/components/QuranAyahList";
 import { transliterateArabicToBengali } from "@/lib/arabic-to-bengali";
 
 interface Ayah {
@@ -55,7 +57,23 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
         englishNameTranslation: arabicData.englishNameTranslation,
         revelationType: arabicData.revelationType,
         numberOfAyahs: arabicData.numberOfAyahs,
-        ayahs: mappedAyahs
+        ayahs: mappedAyahs.map((a: any, idx: number) => {
+          // Strip Bismillah from Ayah 1 Bengali translation (except Surah 1 & 9)
+          if (idx === 0 && arabicData.number !== 1 && arabicData.number !== 9) {
+            const bismillahPatterns = [
+              /^বিসমিল্লাহির রাহমানির রাহীম[\s।\.,-]*/,
+              /^বিসমিল্লাহ্‌ আর-রাহমান আর-রাহীম[\s।\.,-]*/,
+              /^পরম করুণাময় অতি দয়ালু আল্লাহর নামে[\s।\.,-]*/,
+              /^আল্লাহর নামে[,\s]* যিনি পরম করুণাময়[,\s]* অতি দয়ালু[\s।\.,-]*/,
+            ];
+            let cleanedBn = a.bengali.text;
+            for (const pattern of bismillahPatterns) {
+              cleanedBn = cleanedBn.replace(pattern, '').trim();
+            }
+            return { ...a, bengali: { ...a.bengali, text: cleanedBn } };
+          }
+          return a;
+        })
       };
     } else {
       error = "Failed to locate surah translations.";
@@ -84,8 +102,8 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
       
       {/* Desktop Sidebar Stub */}
       <aside className="hidden md:flex flex-col w-24 bg-[#F4F7FB] items-center py-8 gap-10 sticky top-0 h-screen overflow-y-auto shrink-0 border-r border-slate-200/50">
-        <Link href="/" className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-          <BookOpen className="w-6 h-6" />
+        <Link href="/" className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
+          <Image src="/image.png" alt="Logo" fill className="object-cover" />
         </Link>
         <nav className="flex flex-col gap-8 flex-1 w-full items-center mt-4">
           <Link href="/quran" className="text-emerald-500 relative flex justify-center w-full">
@@ -131,55 +149,7 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
               </div>
             )}
 
-            {surah.ayahs.map((ayahTuple) => (
-              <div
-                key={ayahTuple.arabic.numberInSurah}
-                className="group relative bg-white border border-slate-100 p-6 sm:p-8 rounded-[2rem] shadow-sm hover:shadow-md hover:border-emerald-100 transition-all"
-              >
-                {/* Ayah Actions/Numbering */}
-                <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-emerald-50 text-emerald-600">
-                    {ayahTuple.arabic.numberInSurah}
-                  </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors">
-                      <Volume2 className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors">
-                      <Heart className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* 1. Arabic Text */}
-                <div className="mb-8 pl-4 sm:pl-10">
-                  <p 
-                    className="text-3xl sm:text-4xl lg:text-5xl font-arabic leading-[1.8] text-right text-slate-800" 
-                    dir="rtl"
-                  >
-                    {ayahTuple.arabic.text}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  {/* 2. Phonetic Transliteration (Uccharon) mapped natively to Bengali */}
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Bangla Uccharon (Phonetic)</h4>
-                    <p className="text-base sm:text-lg text-slate-600 font-medium italic font-bengali leading-relaxed">
-                      {ayahTuple.bengaliPhonetic}
-                    </p>
-                  </div>
-
-                  {/* 3. Bengali Translation (Meaning) */}
-                  <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                    <h4 className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider mb-2">Meaning (Bangla)</h4>
-                    <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-bengali">
-                      {ayahTuple.bengali.text}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <QuranAyahList ayahs={surah.ayahs} />
           </div>
         </div>
 

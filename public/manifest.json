@@ -1,0 +1,21 @@
+{
+  "name": "খিজিরিয়া চিশতিয়া দরবার শরীফ",
+  "short_name": "দরবার শরীফ",
+  "description": "খিজিরিয়া চিশতিয়া ভান্ডার দরবার শরীফ পোর্টাল - কুরআন, হাদিস, কালাম ও আরও অনেক কিছু",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F7FB",
+  "theme_color": "#065F46",
+  "icons": [
+    {
+      "src": "/image.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/image.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

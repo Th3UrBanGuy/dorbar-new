@@ -7,7 +7,9 @@ import {
   BookHeart, LibraryBig, FileText, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useFavorites } from "@/hooks/use-favorites";
 
 const HADITH_COLLECTIONS = [
   { id: "bukhari", name: "Sahih Bukhari", arabic: "صحيح البخاري", author: "Imam Muhammad al-Bukhari", total: 7563, active: true },
@@ -23,6 +25,7 @@ export default function HadithDashboardPage() {
   const [activeTab, setActiveTab] = useState("Hadith");
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const { toggle, isFavorite } = useFavorites("hadith-favorites");
 
   const filteredCollections = HADITH_COLLECTIONS.filter(col => 
     col.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -34,8 +37,8 @@ export default function HadithDashboardPage() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-24 bg-[#F4F7FB] items-center py-8 gap-10 sticky top-0 h-screen overflow-y-auto hide-scrollbar">
         {/* Logo */}
-        <Link href="/" className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-          <BookOpen className="w-6 h-6" />
+        <Link href="/" className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
+          <Image src="/image.png" alt="Logo" fill className="object-cover" />
         </Link>
 
         {/* Navigation Icons */}
@@ -174,8 +177,11 @@ export default function HadithDashboardPage() {
                       }`}>
                         <LibraryBig className="w-6 h-6" />
                       </div>
-                      <button className={`transition-colors ${collection.active ? "text-emerald-500" : "text-slate-300 group-hover:text-emerald-400"}`}>
-                        <Heart className="w-5 h-5" fill={collection.active ? "currentColor" : "none"} />
+                      <button 
+                        onClick={(e) => { e.preventDefault(); toggle(collection.id); }}
+                        className="transition-colors z-10"
+                      >
+                        <Heart className={`w-5 h-5 transition-colors ${isFavorite(collection.id) ? "text-rose-500 fill-rose-500" : "text-slate-300 group-hover:text-emerald-400"}`} />
                       </button>
                     </div>
                     

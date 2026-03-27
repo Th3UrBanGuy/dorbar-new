@@ -1,29 +1,25 @@
+"use client";
+
+import { useState } from "react";
 import { BookOpen, Heart, LogOut, Search, Headphones, Bell, Grid, List, ChevronDown, BookHeart, ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { SURAHS } from "@/lib/surah-data";
+import { useFavorites } from "@/hooks/use-favorites";
 
-interface Surah {
-  number: number;
-  name: string;
-  englishName: string;
-  englishNameTranslation: string;
-  numberOfAyahs: number;
-  revelationType: string;
-}
+export default function QuranDashboardPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { toggle, isFavorite } = useFavorites("quran-favorites");
 
-export default async function QuranDashboardPage() {
-  let surahs: Surah[] = [];
-  let error = null;
-
-  try {
-    const res = await fetch("https://api.alquran.cloud/v1/surah", { next: { revalidate: 3600 * 24 } });
-    if (!res.ok) throw new Error("Failed to fetch surahs");
-    const data = await res.json();
-    surahs = data.data;
-  } catch (err) {
-    console.error(err);
-    error = "Failed to load Surah data.";
-  }
+  const filteredSurahs = searchQuery
+    ? SURAHS.filter(
+        (s) =>
+          s.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.englishNameTranslation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.number.toString() === searchQuery
+      )
+    : SURAHS;
 
   return (
     <div className="min-h-screen bg-[#F4F7FB] flex font-sans text-slate-800 selection:bg-emerald-200">
@@ -31,8 +27,8 @@ export default async function QuranDashboardPage() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-24 bg-[#F4F7FB] items-center py-8 gap-10 sticky top-0 h-screen overflow-y-auto hide-scrollbar">
         {/* Logo */}
-        <Link href="/" className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-          <BookOpen className="w-6 h-6" />
+        <Link href="/" className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
+          <Image src="/image.png" alt="Logo" fill className="object-cover" />
         </Link>
 
         {/* Navigation Icons */}
@@ -85,9 +81,6 @@ export default async function QuranDashboardPage() {
                 <ChevronLeft className="w-5 h-5" />
               </Link>
               <button className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
-                <Search className="w-4 h-4" />
-              </button>
-              <button className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
                 <Bell className="w-4 h-4" />
               </button>
             </div>
@@ -99,6 +92,8 @@ export default async function QuranDashboardPage() {
               <input 
                 type="text" 
                 placeholder="Search Surah..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-6 pr-12 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
               />
               <Search className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
@@ -115,6 +110,20 @@ export default async function QuranDashboardPage() {
             </Button>
           </div>
         </header>
+
+        {/* Mobile Search Bar */}
+        <div className="sm:hidden px-6 pb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search Surah..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-6 pr-12 py-3 bg-slate-50 border border-slate-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+            />
+            <Search className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
+          </div>
+        </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-6 sm:px-10 pb-24 md:pb-10 flex flex-col xl:flex-row gap-10">
@@ -147,40 +156,37 @@ export default async function QuranDashboardPage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-5">
-              {error ? (
-                <div className="col-span-full p-4 bg-red-50 text-red-500 rounded-xl">{error}</div>
-              ) : (
-                surahs.map((surah) => (
-                  <Link href={`/quran/${surah.number}`} key={surah.number}>
-                    <div
-                      className="group relative bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all duration-300 cursor-pointer h-full flex flex-col"
+              {filteredSurahs.map((surah) => (
+                <div key={surah.number} className="group relative bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all duration-300 cursor-pointer h-full flex flex-col">
+                  <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4">
+                    <Link href={`/quran/${surah.number}`} className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-slate-50 text-slate-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                      {surah.number}
+                    </Link>
+                    <button 
+                      onClick={(e) => { e.preventDefault(); toggle(String(surah.number)); }}
+                      className="transition-colors z-10"
                     >
-                      <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-slate-50 text-slate-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                          {surah.number}
-                        </div>
-                        <button className="text-slate-300 group-hover:text-emerald-400 transition-colors">
-                          <Heart className="w-5 h-5" />
-                        </button>
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col justify-end">
-                        <h3 className="text-lg font-bold text-slate-800 mb-1">{surah.englishName}</h3>
-                        <h4 className="text-2xl font-arabic text-emerald-600 mb-3 text-right" dir="rtl">{surah.name.replace('سُورَةُ ', '')}</h4>
-                        
-                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
-                          <p className="text-xs text-slate-500 font-medium">
-                            {surah.englishNameTranslation}
-                          </p>
-                          <p className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">
-                            {surah.numberOfAyahs} Ayahs
-                          </p>
-                        </div>
-                      </div>
+                      <Heart 
+                        className={`w-5 h-5 transition-colors ${isFavorite(String(surah.number)) ? "text-rose-500 fill-rose-500" : "text-slate-300 group-hover:text-emerald-400"}`} 
+                      />
+                    </button>
+                  </div>
+                  
+                  <Link href={`/quran/${surah.number}`} className="flex-1 flex flex-col justify-end">
+                    <h3 className="text-lg font-bold text-slate-800 mb-1">{surah.englishName}</h3>
+                    <h4 className="text-2xl font-arabic text-emerald-600 mb-3 text-right" dir="rtl">{surah.name.replace('سُورَةُ ', '')}</h4>
+                    
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
+                      <p className="text-xs text-slate-500 font-medium">
+                        {surah.englishNameTranslation}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                        {surah.numberOfAyahs} Ayahs
+                      </p>
                     </div>
                   </Link>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
 
