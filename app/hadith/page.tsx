@@ -27,18 +27,18 @@ export default function HadithDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toggle, isFavorite } = useFavorites("hadith-favorites");
 
-  const filteredCollections = HADITH_COLLECTIONS.filter(col => 
+  const filteredCollections = HADITH_COLLECTIONS.filter(col =>
     col.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-[#F4F7FB] flex font-sans text-slate-800 selection:bg-emerald-200">
-      
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-24 bg-[#F4F7FB] items-center py-8 gap-10 sticky top-0 h-screen overflow-y-auto hide-scrollbar">
         {/* Logo */}
         <Link href="/" className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
-          <Image src="/image.png" alt="Logo" fill className="object-cover" />
+          <Image src="/4.png" alt="Logo" fill className="object-cover" />
         </Link>
 
         {/* Navigation Icons */}
@@ -65,27 +65,27 @@ export default function HadithDashboardPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white md:rounded-l-[3rem] shadow-[-10px_0_30px_rgba(0,0,0,0.02)] relative">
-        
+
         {/* Header */}
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 sm:px-10 py-6 sm:py-8 gap-4 z-10 bg-white sticky top-0 border-b border-slate-100 sm:border-none">
           {/* Title Toggle & Mobile Actions */}
           <div className="flex items-center justify-between w-full sm:w-auto">
             <div className="flex items-center gap-4 sm:gap-6 text-xl sm:text-3xl">
-              <Link 
+              <Link
                 href="/quran"
                 onClick={() => setActiveTab("Quran")}
                 className={`font-bold transition-colors ${activeTab === "Quran" ? "text-slate-900" : "text-slate-400 font-medium hover:text-slate-600"}`}
               >
                 Quran
               </Link>
-              <Link 
+              <Link
                 href="/hadith"
                 className={`font-bold transition-colors ${activeTab === "Hadith" ? "text-slate-900" : "text-slate-400 font-medium"}`}
               >
                 Hadith
               </Link>
             </div>
-            
+
             {/* Mobile Actions */}
             <div className="flex sm:hidden items-center gap-2">
               <Link href="/dashboard" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
@@ -103,16 +103,16 @@ export default function HadithDashboardPage() {
           {/* Search & Actions (Desktop) */}
           <div className="hidden sm:flex items-center gap-4 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-64">
-              <input 
-                type="text" 
-                placeholder="Search Hadith Collections..." 
+              <input
+                type="text"
+                placeholder="Search Hadith Collections..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-6 pr-12 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
               />
               <Search className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
             </div>
-            
+
             <button className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
               <Headphones className="w-5 h-5" />
             </button>
@@ -127,20 +127,20 @@ export default function HadithDashboardPage() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-6 sm:px-10 pb-24 md:pb-10 flex flex-col xl:flex-row gap-10">
-          
+
           {/* Left: Collections Grid */}
           <div className="flex-1 flex flex-col gap-8">
-            
+
             {/* Controls */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50/50 p-2 rounded-2xl">
               <div className="flex items-center gap-2 px-2">
-                <button 
+                <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-lg transition-colors ${viewMode === "grid" ? "text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
-                <button 
+                <button
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-lg transition-colors ${viewMode === "list" ? "text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
                 >
@@ -165,26 +165,24 @@ export default function HadithDashboardPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`group relative p-6 rounded-3xl border transition-all duration-300 cursor-pointer h-full flex flex-col ${
-                      collection.active 
-                        ? "bg-white border-emerald-100 shadow-[0_8px_30px_rgb(16,185,129,0.12)]" 
+                    className={`group relative p-6 rounded-3xl border transition-all duration-300 cursor-pointer h-full flex flex-col ${collection.active
+                        ? "bg-white border-emerald-100 shadow-[0_8px_30px_rgb(16,185,129,0.12)]"
                         : "bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-100"
-                    }`}
+                      }`}
                   >
                     <div className="flex justify-between items-start mb-6">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-sm ${
-                        collection.active ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors"
-                      }`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-sm ${collection.active ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors"
+                        }`}>
                         <LibraryBig className="w-6 h-6" />
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.preventDefault(); toggle(collection.id); }}
                         className="transition-colors z-10"
                       >
                         <Heart className={`w-5 h-5 transition-colors ${isFavorite(collection.id) ? "text-rose-500 fill-rose-500" : "text-slate-300 group-hover:text-emerald-400"}`} />
                       </button>
                     </div>
-                    
+
                     <div className="flex-1 flex flex-col justify-end">
                       <h3 className="text-xl font-bold text-slate-800 mb-1">{collection.name}</h3>
                       <h4 className="text-lg font-arabic text-emerald-600 mb-2" dir="rtl">{collection.arabic}</h4>
@@ -205,7 +203,7 @@ export default function HadithDashboardPage() {
 
           {/* Right Sidebar */}
           <aside className="w-full xl:w-80 flex flex-col gap-8 shrink-0">
-            
+
             {/* Profile */}
             <div className="flex items-center justify-between">
               <div>
@@ -238,17 +236,17 @@ export default function HadithDashboardPage() {
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden mt-4">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10 pointer-events-none"></div>
-              
+
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
                   <BookHeart className="w-5 h-5 text-emerald-100" />
                   <h4 className="text-xs font-bold text-emerald-100 uppercase tracking-wider">Hadith of the Day</h4>
                 </div>
-                
+
                 <h3 className="text-2xl font-arabic text-right mb-4 leading-[1.6] opacity-90" dir="rtl">
                   إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ
                 </h3>
-                
+
                 <p className="text-sm leading-relaxed mb-6 font-medium text-emerald-50">
                   "Actions are dependent upon their intentions..."
                 </p>

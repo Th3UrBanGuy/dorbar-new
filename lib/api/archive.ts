@@ -52,3 +52,13 @@ export async function getSufiArchive(): Promise<ArchiveData> {
     return { kalam: [], kitab: [] };
   }
 }
+
+export async function getKalamById(id: number): Promise<KalamItem | null> {
+  const archive = await getSufiArchive();
+  return archive.kalam.find(k => k.id === id) || null;
+}
+
+export async function getKitabById(id: number): Promise<KitabItem | null> {
+  const archive = await getSufiArchive();
+  return archive.kitab.find(k => k.id === id) || null;
+}

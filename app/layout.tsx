@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Providers from './providers';
 import Preloader from '@/components/Preloader';
+import TranslationPrompt from '@/components/TranslationPrompt';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -32,6 +33,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="font-sans antialiased text-slate-900 bg-[#F4F7FB] pb-24 md:pb-0" suppressHydrationWarning>
         <Providers>
           <Preloader />
+          <TranslationPrompt />
           <Navbar />
           {children}
         </Providers>
