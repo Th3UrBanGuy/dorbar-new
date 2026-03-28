@@ -1,17 +1,31 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from './lib/auth';
 
-export function middleware(request: NextRequest) {
-  const isAuthenticated = request.cookies.get('dorbar_auth');
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('dorbar_auth')?.value;
+  let isAuthenticated = false;
+
+  // If token exists, cryptographically verify it
+  if (token) {
+    const payload = await verifyToken(token);
+    if (payload) {
+      isAuthenticated = true;
+    }
+  }
 
   // Paths that require authentication
   const protectedPaths = ['/dashboard', '/quran', '/tasbih'];
   const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
-  // If user is trying to access a protected route and is not authenticated
+  // If user is trying to access a protected route and is not authenticated/has invalid token
   if (isProtectedPath && !isAuthenticated) {
-    const loginUrl = new URL('/login', request.url);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    if (token) {
+      // Clear the invalid token to prevent a redirect loop
+      response.cookies.delete('dorbar_auth'); 
+    }
+    return response;
   }
 
   // If authenticated user tries to access /login, redirect to /dashboard

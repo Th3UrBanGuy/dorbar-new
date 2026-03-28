@@ -8,10 +8,18 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState("");
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+    router.refresh();
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -24,56 +32,61 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB] flex flex-col font-sans selection:bg-blue-200 pb-20 lg:pb-8">
+    <div className="min-h-screen bg-[#F4F7FB] flex flex-col font-sans selection:bg-blue-200 pb-20 lg:pb-8 overflow-x-hidden">
       {/* Top Navigation Bar (Mobile & Desktop) */}
-      <header className="sticky top-0 z-50 bg-[#F4F7FB]/80 backdrop-blur-xl border-b border-slate-200/50 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm block">
-             <Image src="https://picsum.photos/seed/avatar/100/100" alt="Profile" width={40} height={40} className="object-cover" referrerPolicy="no-referrer" />
-          </Link>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">As-salamu alaykum</p>
-            <h2 className="text-sm font-bold text-slate-900">Mohammad Jabel</h2>
+      <header className="sticky top-0 z-50 bg-[#F4F7FB]/95 backdrop-blur-xl border-b border-slate-200/50">
+        <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-6">
+          <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+            <Link href="/login" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-white shadow-sm block shrink-0">
+               <Image src="https://picsum.photos/seed/avatar/100/100" alt="Profile" width={44} height={44} className="object-cover" referrerPolicy="no-referrer" />
+            </Link>
+            <div className="min-w-0 pr-2 flex flex-col justify-center">
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate mb-0.5">আসসালামু আলাইকুম</p>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate leading-tight">মোহাম্মদ জাবেল</h2>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-           <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors">
-            <Search className="w-5 h-5" />
-          </button>
-          <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+             <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors">
+              <Search className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
+            </button>
+            <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors relative">
+              <Bell className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
+              <span className="absolute top-[6px] right-[6px] sm:top-2 sm:right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+            </button>
+            <button onClick={handleLogout} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shadow-sm border border-red-100 hover:bg-red-100 transition-colors" title="লগআউট">
+              <LogOut className="w-[18px] h-[18px] sm:w-4 sm:h-4 ml-0.5" />
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 py-4 sm:py-6 gap-6 sm:gap-8">
+      <main className="flex-1 flex flex-col w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-6 gap-4 sm:gap-8">
         
-        <div className="grid lg:grid-cols-12 gap-6 sm:gap-8">
+        <div className="grid lg:grid-cols-12 gap-4 sm:gap-8">
           
           {/* Main Content Column */}
-          <div className="lg:col-span-8 flex flex-col gap-6 sm:gap-8">
+          <div className="lg:col-span-8 flex flex-col gap-4 sm:gap-8">
             
             {/* Hero: Prayer Times */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 text-white shadow-2xl shadow-blue-900/20 relative overflow-hidden"
+              className="bg-gradient-to-br from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-8 text-white shadow-2xl shadow-blue-900/20 relative overflow-hidden"
             >
               {/* Decorative background elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
               <div className="absolute bottom-0 left-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl"></div>
               
-              <div className="relative z-10 flex flex-col items-center text-center mb-6 sm:mb-8">
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] sm:text-sm font-medium mb-3 sm:mb-4 border border-white/10">
-                  <MapPin className="w-3.5 h-3.5 sm:w-4 h-4" /> Dhaka, Bangladesh
+              <div className="relative z-10 flex flex-col items-center text-center mb-5 sm:mb-8">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-sm font-medium mb-2 sm:mb-4 border border-white/10">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> Dhaka, Bangladesh
                 </div>
-                <h1 className="text-4xl xs:text-5xl sm:text-7xl font-bold tracking-tight mb-2 font-mono">{currentTime || "00:00"}</h1>
-                <p className="text-blue-200 text-xs sm:text-sm font-medium">Remaining time to Fajr pray: 04:12:30</p>
+                <h1 className="text-[2.25rem] leading-none xs:text-5xl sm:text-7xl font-bold tracking-tight mb-1 sm:mb-2 font-mono">{currentTime || "00:00"}</h1>
+                <p className="text-blue-200 text-[10px] sm:text-sm font-medium">Remaining time to Fajr pray: 04:12:30</p>
               </div>
 
               {/* Prayer Timeline */}
-              <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-[1.5rem] sm:rounded-3xl p-3 sm:p-4 border border-white/10 flex justify-between items-center overflow-x-auto hide-scrollbar gap-2 sm:gap-4">
+              <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-[1.25rem] sm:rounded-3xl p-2 sm:p-4 border border-white/10 flex justify-between items-center overflow-x-auto hide-scrollbar gap-1 sm:gap-4">
                 {[
                   { name: "Fajr", time: "5:25", icon: Sunrise, active: true },
                   { name: "Dzuhr", time: "1:30", icon: Sun, active: false },
@@ -81,10 +94,10 @@ export default function DashboardPage() {
                   { name: "Maghrib", time: "5:36", icon: Sunset, active: false },
                   { name: "Isha", time: "7:45", icon: Moon, active: false },
                 ].map((prayer, i) => (
-                  <div key={i} className={`flex flex-col items-center min-w-[50px] sm:min-w-[60px] p-1.5 sm:p-2 rounded-xl sm:rounded-2xl transition-colors ${prayer.active ? 'bg-white text-blue-900 shadow-lg' : 'text-blue-100 hover:bg-white/5'}`}>
-                    <prayer.icon className={`w-5 h-5 sm:w-6 h-6 mb-1 sm:mb-2 ${prayer.active ? 'text-blue-600' : 'text-blue-200'}`} />
-                    <span className="text-[9px] sm:text-xs font-bold mb-0.5 sm:mb-1">{prayer.name}</span>
-                    <span className={`text-[8px] sm:text-[10px] font-medium ${prayer.active ? 'text-blue-500' : 'text-blue-300'}`}>{prayer.time}</span>
+                  <div key={i} className={`flex flex-col items-center min-w-[42px] xs:min-w-[48px] sm:min-w-[60px] p-1.5 sm:p-2 rounded-xl sm:rounded-2xl transition-colors ${prayer.active ? 'bg-white text-blue-900 shadow-lg' : 'text-blue-100 hover:bg-white/5'}`}>
+                    <prayer.icon className={`w-4 h-4 sm:w-6 sm:h-6 mb-1 sm:mb-2 ${prayer.active ? 'text-blue-600' : 'text-blue-200'}`} />
+                    <span className="text-[8px] sm:text-xs font-bold mb-0.5 sm:mb-1">{prayer.name}</span>
+                    <span className={`text-[8px] sm:text-[10px] font-medium leading-none ${prayer.active ? 'text-blue-500' : 'text-blue-300'}`}>{prayer.time}</span>
                   </div>
                 ))}
               </div>
@@ -95,7 +108,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-r from-[#065F46] to-[#047857] rounded-[2rem] p-5 sm:p-8 text-white shadow-xl shadow-emerald-900/20 flex items-center justify-between relative overflow-hidden"
+              className="bg-gradient-to-r from-[#065F46] to-[#047857] rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 text-white shadow-xl shadow-emerald-900/20 flex items-center justify-between relative overflow-hidden"
             >
               <div className="absolute right-0 top-0 w-1/2 h-full opacity-20 pointer-events-none">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-cover">
@@ -103,15 +116,15 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1">
-                <p className="text-emerald-100 text-xs sm:text-sm font-medium mb-1">Last Read</p>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-1 font-serif">Al-Fatihah</h3>
-                <p className="text-emerald-200 text-xs sm:text-sm mb-4 sm:mb-6">Ayah no. 1</p>
-                <Button className="rounded-full bg-white text-emerald-800 hover:bg-emerald-50 font-semibold px-5 sm:px-6 h-9 sm:h-10 text-xs sm:text-base shadow-lg">
-                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                <p className="text-emerald-100 text-[10px] sm:text-sm font-medium mb-0.5 sm:mb-1">Last Read</p>
+                <h3 className="text-xl sm:text-3xl font-bold mb-0.5 sm:mb-1 font-serif">Al-Fatihah</h3>
+                <p className="text-emerald-200 text-[10px] sm:text-sm mb-3 sm:mb-6">Ayah no. 1</p>
+                <Button className="rounded-full bg-white text-emerald-800 hover:bg-emerald-50 font-semibold px-4 sm:px-6 h-8 sm:h-10 text-[10px] sm:text-base shadow-lg">
+                  Continue <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                 </Button>
               </div>
               <div className="relative z-10 hidden xs:block">
-                <BookOpen className="w-16 h-16 sm:w-24 sm:h-24 text-white/80 drop-shadow-lg" strokeWidth={1} />
+                <BookOpen className="w-14 h-14 sm:w-24 sm:h-24 text-white/80 drop-shadow-lg" strokeWidth={1} />
               </div>
             </motion.div>
 
@@ -121,33 +134,33 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center justify-between mb-4 px-2">
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900">Explore</h3>
-                <button className="text-xs sm:text-sm font-medium text-[#0066FF] hover:underline">View All</button>
+              <div className="flex items-center justify-between mb-3 sm:mb-4 px-1 sm:px-2">
+                <h3 className="text-[1.05rem] sm:text-xl font-bold text-slate-900">Explore</h3>
+                <button className="text-[10px] sm:text-sm font-medium text-[#0066FF] hover:underline">View All</button>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {/* Card 1 */}
-                <div className="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden aspect-square sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
+                <div className="relative rounded-[1.25rem] sm:rounded-[2rem] overflow-hidden aspect-[5/4] sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
                   <Image src="https://picsum.photos/seed/mecca/600/600" alt="Umrah" fill className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
-                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1">Umrah</h4>
-                    <p className="text-white/80 text-[10px] sm:text-xs line-clamp-1 sm:line-clamp-2">Hajj essentials</p>
+                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Umrah</h4>
+                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2">Hajj essentials</p>
                   </div>
                   <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <ArrowRight className="w-3 h-3 sm:w-4 h-4" />
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </div>
                 </div>
                 {/* Card 2 */}
-                <div className="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden aspect-square sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
+                <div className="relative rounded-[1.25rem] sm:rounded-[2rem] overflow-hidden aspect-[5/4] sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
                   <Image src="https://picsum.photos/seed/medina/600/600" alt="Rawda" fill className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B]/90 via-[#064E3B]/40 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
-                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1">Rawda</h4>
-                    <p className="text-white/80 text-[10px] sm:text-xs line-clamp-1 sm:line-clamp-2">Visit the Rawda</p>
+                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Rawda</h4>
+                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2">Visit the Rawda</p>
                   </div>
                   <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <ArrowRight className="w-3 h-3 sm:w-4 h-4" />
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </div>
                 </div>
               </div>
@@ -156,16 +169,16 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Sidebar Column */}
-          <div className="lg:col-span-4 flex flex-col gap-6 sm:gap-8 pb-4 lg:pb-0">
+          <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-8 pb-4 lg:pb-0">
             
             {/* Quick Actions Grid */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
+              className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
             >
-              <div className="grid grid-cols-4 gap-y-5 xs:gap-y-6 gap-x-2">
+              <div className="grid grid-cols-4 gap-y-4 xs:gap-y-6 gap-x-1 sm:gap-x-2">
                 {[
                   { name: "Quran", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50", href: "/quran" },
                   { name: "Calendar", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/calendar" },
@@ -177,10 +190,10 @@ export default function DashboardPage() {
                   { name: "More", icon: Settings, color: "text-slate-600", bg: "bg-slate-50", href: "#" },
                 ].map((item, i) => (
                   <Link href={item.href} key={i} className="flex flex-col items-center gap-1.5 cursor-pointer group">
-                    <div className={`w-10 h-10 xs:w-12 xs:h-12 rounded-xl xs:rounded-2xl ${item.bg} flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-sm`}>
-                      <item.icon className={`w-5 h-5 xs:w-6 h-6 ${item.color}`} />
+                    <div className={`w-9 h-9 xs:w-12 xs:h-12 sm:w-12 sm:h-12 rounded-[0.6rem] xs:rounded-2xl ${item.bg} flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-sm`}>
+                      <item.icon className={`w-[18px] h-[18px] xs:w-6 xs:h-6 sm:w-6 sm:h-6 ${item.color}`} />
                     </div>
-                    <span className="text-[10px] xs:text-xs font-semibold text-slate-600 text-center">{item.name}</span>
+                    <span className="text-[9px] xs:text-[10px] sm:text-xs font-semibold text-slate-600 text-center uppercase xs:normal-case tracking-tight xs:tracking-normal">{item.name}</span>
                   </Link>
                 ))}
               </div>
@@ -191,7 +204,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
+              className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Daily Dua</h3>
@@ -212,7 +225,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
+              className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
             >
               <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Prayer Tracker</h3>
               <div className="flex justify-between items-center px-1">
@@ -240,7 +253,7 @@ export default function DashboardPage() {
       </main>
 
       {/* Bottom Navigation (Mobile Only) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200/50 px-6 py-3 flex justify-between items-center z-50 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200/50 px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center z-50 pb-safe">
          {[
             { icon: BookOpen, label: "Home", active: true, href: "/dashboard" },
             { icon: Search, label: "Explore", active: false, href: "#" },

@@ -21,7 +21,7 @@ export default function Navbar() {
       <header className="px-6 lg:px-12 h-28 flex items-center justify-between sticky top-0 z-50 bg-[#F8FAFC]/90 backdrop-blur-md hidden md:flex max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center">
-            <div className="relative w-80 h-20 lg:w-96 lg:h-[5.5rem]">
+            <div className="relative w-80 h-24 lg:w-[28rem] lg:h-[7rem]">
               <Image 
                 src={logoUrl} 
                 alt="খিজিরিয়া চিশতিয়া দরবার শরীফ" 
@@ -48,20 +48,20 @@ export default function Navbar() {
       </header>
 
       {/* Mobile Top Header (Logo & Portal button) */}
-      <header className="px-4 sm:px-6 h-24 flex items-center justify-between sticky top-0 z-50 bg-[#F8FAFC]/90 backdrop-blur-md md:hidden">
-        <Link href="/" className="flex items-center">
-          <div className="relative w-60 h-16 sm:w-72 sm:h-20">
+      <header className="px-3 sm:px-6 h-20 sm:h-24 flex items-center justify-between sticky top-0 z-50 bg-[#F8FAFC]/90 backdrop-blur-md md:hidden gap-2">
+        <Link href="/" className="flex items-center flex-1 min-w-0">
+          <div className="relative w-full max-w-[240px] sm:max-w-[300px] h-16 sm:h-20">
             <Image 
               src={logoUrl} 
               alt="খিজিরিয়া চিশতিয়া দরবার শরীফ" 
               fill 
-              sizes="288px"
+              sizes="(max-width: 640px) 240px, 300px"
               className="object-contain object-left"
               priority
             />
           </div>
         </Link>
-        <Button asChild className="rounded-xl bg-black hover:bg-slate-800 text-white h-9 px-4 text-xs font-medium">
+        <Button asChild className="rounded-xl bg-black hover:bg-slate-800 text-white h-9 px-4 sm:px-5 font-medium shrink-0 text-xs shadow-md">
           <Link href="/dashboard">পোর্টাল</Link>
         </Button>
       </header>
