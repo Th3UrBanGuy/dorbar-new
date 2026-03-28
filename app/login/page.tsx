@@ -52,15 +52,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-[#064E3B] flex items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden">
+      {/* Divine Glow / Nūr Effects */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.15)_0%,_rgba(6,78,59,0)_60%)] pointer-events-none"></div>
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-400/10 rounded-full blur-[120px]"></div>
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-teal-400/10 rounded-full blur-[120px]"></div>
       
-      {/* Islamic pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M30 0L60 30L30 60L0 30z\' fill=\'none\' stroke=\'white\' stroke-width=\'1\'/%3E%3C/svg%3E")', backgroundSize: '30px 30px' }}></div>
+      {/* Light Beams and Rays */}
+      <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-emerald-400/20 to-transparent rotate-12"></div>
+      <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-emerald-400/10 to-transparent -rotate-12"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1px] h-[150%] bg-gradient-to-b from-transparent via-white/5 to-transparent rotate-[30deg]"></div>
 
-      <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl shadow-black/20 overflow-hidden flex flex-col relative z-10 p-8 sm:p-12">
+      {/* Islamic pattern overlay - More refined and divine */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M50 0 L100 50 L50 100 L0 50 Z\' fill=\'none\' stroke=\'white\' stroke-width=\'0.5\'/%3E%3Cellipse cx=\'50\' cy=\'50\' rx=\'15\' ry=\'15\' fill=\'none\' stroke=\'white\' stroke-width=\'0.3\'/%3E%3C/svg%3E")', backgroundSize: '60px 60px' }}></div>
+
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col relative z-10 p-8 sm:p-12">
         
         {/* Back to Home */}
         <div className="flex justify-start mb-6 -mt-2">
@@ -104,7 +110,10 @@ export default function LoginPage() {
           
           <div className="relative">
             <input
+              id="username"
+              name="username"
               type="text"
+              autoComplete="username"
               placeholder="ইউজারনেম বা ইমেইল"
               className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-slate-400"
               value={username}
@@ -115,7 +124,10 @@ export default function LoginPage() {
           
           <div className="relative">
             <input
+              id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               placeholder="পাসওয়ার্ড"
               className="w-full h-12 pl-4 pr-12 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-slate-400"
               value={password}

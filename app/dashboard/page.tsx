@@ -141,7 +141,15 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {/* Card 1 */}
                 <div className="relative rounded-[1.25rem] sm:rounded-[2rem] overflow-hidden aspect-[5/4] sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
-                  <Image src="https://picsum.photos/seed/mecca/600/600" alt="Umrah" fill className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                  <Image 
+                    src="https://picsum.photos/seed/mecca/600/600" 
+                    alt="Umrah" 
+                    fill 
+                    priority
+                    sizes="(max-width: 640px) 50vw, 300px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                    referrerPolicy="no-referrer" 
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
                     <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Umrah</h4>
@@ -153,7 +161,15 @@ export default function DashboardPage() {
                 </div>
                 {/* Card 2 */}
                 <div className="relative rounded-[1.25rem] sm:rounded-[2rem] overflow-hidden aspect-[5/4] sm:aspect-[4/3] group cursor-pointer shadow-md text-white">
-                  <Image src="https://picsum.photos/seed/medina/600/600" alt="Rawda" fill className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                  <Image 
+                    src="https://picsum.photos/seed/medina/600/600" 
+                    alt="Rawda" 
+                    fill 
+                    priority
+                    sizes="(max-width: 640px) 50vw, 300px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                    referrerPolicy="no-referrer" 
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B]/90 via-[#064E3B]/40 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
                     <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Rawda</h4>

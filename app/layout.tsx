@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Providers from './providers';
+import Preloader from '@/components/Preloader';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -21,6 +22,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="bn" className={`${inter.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased text-slate-900 bg-[#F4F7FB] pb-24 md:pb-0" suppressHydrationWarning>
         <Providers>
+          <Preloader />
           <Navbar />
           {children}
         </Providers>

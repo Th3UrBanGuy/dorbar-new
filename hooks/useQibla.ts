@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Geolocation } from '@capacitor/geolocation';
 
 const KAABA_LAT = 21.422487;
@@ -10,6 +10,8 @@ export function useQibla() {
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [isCalibrating, setIsCalibrating] = useState<boolean>(true);
+  const [isManual, setIsManual] = useState<boolean>(false);
+  const sensorTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Math for Qibla
   const calculateQibla = useCallback((lat: number, lng: number) => {
@@ -33,6 +35,14 @@ export function useQibla() {
     if (qiblaDeg < 0) qiblaDeg += 360;
 
     setQiblaDegree(Number(qiblaDeg.toFixed(1)));
+  }, []);
+
+  const setManualHeading = useCallback((newHeading: number) => {
+    setIsManual(true);
+    // Normalize to 0-360
+    let normalized = newHeading % 360;
+    if (normalized < 0) normalized += 360;
+    setHeading(normalized);
   }, []);
 
   const requestCompassPermission = async () => {
@@ -71,49 +81,80 @@ export function useQibla() {
       // Fallback to absolute alpha
       if (compassHeading === undefined || compassHeading === null) {
         if (e.absolute && e.alpha !== null) {
-          compassHeading = 360 - e.alpha; // Convert counterclockwise alpha to clockwise heading
+          compassHeading = 360 - e.alpha; 
+        } else if (e.alpha !== null) {
+          // Some web browsers provide alpha but not 'absolute'
+          compassHeading = 360 - e.alpha;
         } else {
           return;
         }
       }
       
-      setHeading(Math.round(compassHeading));
-      if (isCalibrating) setIsCalibrating(false);
+      if (!isManual) {
+        setHeading(Math.round(compassHeading));
+        if (isCalibrating) setIsCalibrating(false);
+      }
+
+      // Clear the "Calculating..." or "Manual" state if we get real data
+      if (sensorTimeout.current) clearTimeout(sensorTimeout.current);
     };
+
+    // If no sensor data after 2 seconds, assume manual mode
+    sensorTimeout.current = setTimeout(() => {
+      if (isCalibrating) {
+        setIsManual(true);
+        setIsCalibrating(false);
+      }
+    }, 2500);
 
     window.addEventListener('deviceorientationabsolute', handler as EventListener, true);
     window.addEventListener('deviceorientation', handler as EventListener, true);
 
     return () => {
+      if (sensorTimeout.current) clearTimeout(sensorTimeout.current);
       window.removeEventListener('deviceorientationabsolute', handler as EventListener, true);
       window.removeEventListener('deviceorientation', handler as EventListener, true);
     };
-  }, [isCalibrating]);
+  }, [isCalibrating, isManual]);
 
   useEffect(() => {
     // 1. Fetch Geolocation via Capacitor
     const getLocationAndQibla = async () => {
       try {
-        const hasPermissions = await Geolocation.checkPermissions();
-        if (hasPermissions.location !== 'granted') {
-          const request = await Geolocation.requestPermissions();
-          if (request.location !== 'granted') throw new Error("Location permission denied");
+        let latitude, longitude;
+
+        try {
+          // Try Capacitor first
+          const hasPermissions = await Geolocation.checkPermissions();
+          if (hasPermissions.location !== 'granted') {
+            await Geolocation.requestPermissions();
+          }
+          const position = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+          latitude = position.coords.latitude;
+          longitude = position.coords.longitude;
+        } catch (capErr) {
+          // Web Fallback if Capacitor fails or not implemented
+          const pos: any = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+          latitude = pos.coords.latitude;
+          longitude = pos.coords.longitude;
         }
-        
-        const position = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
-        calculateQibla(position.coords.latitude, position.coords.longitude);
+
+        if (latitude && longitude) {
+          calculateQibla(latitude, longitude);
+        }
         
         // 2. Start Compass
         await requestCompassPermission();
         
       } catch (err: any) {
-        // Fallback or display error
-        setError(err.message || 'Failed to detect location.');
+        setError('লোকেশন পাওয়া যায়নি। অনুগ্রহ করে পারমিশন দিন।');
       }
     };
 
     getLocationAndQibla();
   }, [calculateQibla]);
 
-  return { heading, qiblaDegree, error, hasPermission, requestCompassPermission, isCalibrating };
+  return { heading, qiblaDegree, error, hasPermission, requestCompassPermission, isCalibrating, isManual, setManualHeading };
 }

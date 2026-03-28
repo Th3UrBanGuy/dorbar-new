@@ -3,13 +3,13 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { ChevronLeft, Compass, Settings, AlertCircle, RefreshCw } from 'lucide-react';
+import { ChevronLeft, Compass, AlertCircle, RefreshCw } from 'lucide-react';
 import { useQibla } from '@/hooks/useQibla';
 
 type CompassSkin = 'classic' | 'midnight' | 'emerald' | 'antique';
 
 export default function QiblaPage() {
-  const { heading, qiblaDegree, error, hasPermission, requestCompassPermission, isCalibrating } = useQibla();
+  const { heading, qiblaDegree, error, hasPermission, requestCompassPermission, isCalibrating, isManual, setManualHeading } = useQibla();
   const [activeSkin, setActiveSkin] = useState<CompassSkin>('midnight');
 
   // Ensure heading is smooth and clamped
@@ -96,6 +96,18 @@ export default function QiblaPage() {
           </div>
         )}
 
+        {/* Mode Indicator */}
+        {!isCalibrating && !error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`absolute top-0 z-10 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 border ${isManual ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'}`}
+          >
+            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isManual ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+            {isManual ? 'Manual Mode (Rotate with buttons)' : 'Live Sensor Active'}
+          </motion.div>
+        )}
+
         {/* The CSS Compass */}
         <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 my-8">
            {/* Outer Ring */}
@@ -147,31 +159,63 @@ export default function QiblaPage() {
              </motion.div>
              
              {/* Center Pin & Main Device Needle (Static pointing up, or reacting slightly) */}
-             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                 {/* North arrow (always points up relative to device) */}
                 <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full w-2 h-28 ${currentSkin.needle} rounded-t-full shadow-lg z-10 origin-bottom`}></div>
                 {/* South arrow */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-2 h-28 bg-white/50 backdrop-blur-sm rounded-b-full shadow-lg z-10 origin-top border border-white/20"></div>
                 {/* Center dot */}
                 <div className={`w-6 h-6 rounded-full ${activeSkin === 'classic' ? 'bg-slate-800' : 'bg-white'} border-4 ${currentSkin.ring} z-20 shadow-xl`}></div>
-             </div>
-
+              </div>
            </div>
         </div>
 
-        {/* Readout stats */}
-        <div className="mt-4 flex gap-8">
-           <div className={`text-center ${currentSkin.text}`}>
-             <p className="text-xs opacity-60 font-medium">HEADING</p>
-             <p className="text-xl font-mono font-bold">{normalizedHeading}° {normalizedHeading > 315 || normalizedHeading < 45 ? 'N' : normalizedHeading < 135 ? 'E' : normalizedHeading < 225 ? 'S' : 'W'}</p>
-           </div>
-           <div className={`w-px h-10 ${currentSkin.text} opacity-20`}></div>
-           <div className={`text-center ${currentSkin.text}`}>
-             <p className="text-xs opacity-60 font-medium">TARGET</p>
-             <p className="text-xl font-mono font-bold">{qiblaDegree !== null ? `${qiblaDegree}°` : '--'}</p>
-           </div>
-        </div>
+         {/* Readout stats */}
+         <div className="mt-8 flex items-center gap-8">
+            <div className={`text-center ${currentSkin.text}`}>
+              <p className="text-[10px] opacity-60 font-bold tracking-widest uppercase mb-1">Your Heading</p>
+              <p className="text-2xl font-mono font-black">{normalizedHeading}° {normalizedHeading > 315 || normalizedHeading < 45 ? 'N' : normalizedHeading < 135 ? 'E' : normalizedHeading < 225 ? 'S' : 'W'}</p>
+            </div>
+            <div className={`w-px h-12 ${currentSkin.text} opacity-20`}></div>
+            <div className={`text-center ${currentSkin.text}`}>
+              <p className="text-[10px] opacity-60 font-bold tracking-widest uppercase mb-1">Qibla Direction</p>
+              <p className="text-2xl font-mono font-black">{qiblaDegree !== null ? `${qiblaDegree}°` : '--'}</p>
+            </div>
+         </div>
 
+         {/* Manual Controls - Enhanced for PC/Web */}
+         {isManual && (
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.9 }}
+             animate={{ opacity: 1, scale: 1 }}
+             className="mt-10 flex flex-col items-center gap-4"
+           >
+              <p className={`text-[10px] font-bold ${currentSkin.text} opacity-50 uppercase tracking-widest`}>Steer Manually</p>
+              <div className="flex items-center gap-6">
+                <button 
+                  onClick={() => setManualHeading(heading - 5)}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center border-2 border-white/20 ${activeSkin === 'classic' ? 'bg-slate-100 text-slate-800' : 'bg-white/10 text-white'} hover:bg-white/20 active:scale-95 transition-all shadow-xl`}
+                >
+                  <RefreshCw className="w-6 h-6 rotate-[-90deg]" />
+                </button>
+                <button 
+                  onClick={() => setManualHeading(0)}
+                  className={`px-6 h-14 rounded-full font-bold text-xs uppercase tracking-widest border-2 border-white/20 ${activeSkin === 'classic' ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'} active:scale-95 transition-all shadow-xl`}
+                >
+                  Reset
+                </button>
+                <button 
+                  onClick={() => setManualHeading(heading + 5)}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center border-2 border-white/20 ${activeSkin === 'classic' ? 'bg-slate-100 text-slate-800' : 'bg-white/10 text-white'} hover:bg-white/20 active:scale-95 transition-all shadow-xl`}
+                >
+                  <RefreshCw className="w-6 h-6" />
+                </button>
+              </div>
+              <p className="text-[10px] text-center opacity-40 max-w-xs mt-2 uppercase font-medium leading-relaxed">
+                Rotate the compass to align North (N) with your real North. <br/> Qibla is fixed relative to North.
+              </p>
+           </motion.div>
+         )}
       </main>
 
       {/* Compass Skin Selector Carousel */}
