@@ -1,6 +1,6 @@
 {
-  "name": "খিজিরিয়া চিশতিয়া দরবার শরীফ",
-  "short_name": "দরবার শরীফ",
+  "name": "খিজিরিয়া চিশতিয়া ভান্ডার",
+  "short_name": "খিজিরিয়া চিশতিয়া",
   "description": "খিজিরিয়া চিশতিয়া ভান্ডার দরবার শরীফ পোর্টাল - কুরআন, হাদিস, কালাম ও আরও অনেক কিছু",
   "start_url": "/",
   "display": "standalone",
@@ -8,14 +8,16 @@
   "theme_color": "#065F46",
   "icons": [
     {
-      "src": "/image.png",
+      "src": "/3.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/image.png",
+      "src": "/3.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

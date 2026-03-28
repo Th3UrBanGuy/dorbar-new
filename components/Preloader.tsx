@@ -11,7 +11,7 @@ export default function Preloader() {
     // Hide preloader after a longer delay to show full animation (8-9s)
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 8000); // 8.5 seconds visibility
+    }, 7700); // 8.5 seconds visibility
 
     return () => clearTimeout(timer);
   }, []);
@@ -39,7 +39,7 @@ export default function Preloader() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 1 }}
-            className="mt-6 text-emerald-900/40 text-[11px] sm:text-sm font-bold tracking-[0.4em] uppercase"
+            className="mt-6 text-emerald-900/40"
           >
             খিজিরিয়া চিশতিয়া ভান্ডার
           </motion.div>
