@@ -11,7 +11,7 @@ export default function Preloader() {
     // Hide preloader after a longer delay to show full animation (8-9s)
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 7700); // 8.5 seconds visibility
+    }, 7600); // 8.5 seconds visibility
 
     return () => clearTimeout(timer);
   }, []);

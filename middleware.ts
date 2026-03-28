@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Paths that require authentication
-  const protectedPaths = ['/dashboard', '/quran', '/tasbih'];
+  const protectedPaths = ['/dashboard', '/tasbih'];
   const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
   // If user is trying to access a protected route and is not authenticated/has invalid token

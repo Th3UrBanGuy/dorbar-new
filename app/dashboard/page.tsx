@@ -37,7 +37,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-50 bg-[#F4F7FB]/95 backdrop-blur-xl border-b border-slate-200/50">
         <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-6">
           <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
-            <Link href="/login" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-white shadow-sm block shrink-0">
+            <Link href="/dashboard/settings" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-white shadow-sm block shrink-0">
                <Image src="https://picsum.photos/seed/avatar/100/100" alt="Profile" width={44} height={44} className="object-cover" referrerPolicy="no-referrer" />
             </Link>
             <div className="min-w-0 pr-2 flex flex-col justify-center">
@@ -49,6 +49,9 @@ export default function DashboardPage() {
              <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors">
               <Search className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
             </button>
+            <Link href="/dashboard/settings" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors">
+              <Settings className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
+            </Link>
             <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors relative">
               <Bell className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
               <span className="absolute top-[6px] right-[6px] sm:top-2 sm:right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
