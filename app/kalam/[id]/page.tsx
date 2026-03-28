@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ChevronLeft, Music, Play, Pause, Download, 
@@ -18,6 +18,7 @@ export default function KalamDetailPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const contentRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
     async function fetchKalam() {
@@ -35,7 +36,11 @@ export default function KalamDetailPage() {
   }, [id]);
 
   const handleCopy = () => {
-    if (kalam?.content) {
+    if (contentRef.current) {
+      navigator.clipboard.writeText(contentRef.current.innerText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else if (kalam?.content) {
       navigator.clipboard.writeText(kalam.content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -165,7 +170,7 @@ export default function KalamDetailPage() {
                </button>
             </div>
 
-            <pre className="text-lg sm:text-xl text-slate-700 leading-relaxed font-sans whitespace-pre-wrap italic text-center drop-shadow-sm font-medium">
+            <pre ref={contentRef} className="text-lg sm:text-xl text-slate-700 leading-relaxed font-sans whitespace-pre-wrap italic text-center drop-shadow-sm font-medium">
               {kalam.content}
             </pre>
             
