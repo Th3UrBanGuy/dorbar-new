@@ -132,7 +132,7 @@ export default function TranslationPrompt() {
             <div className="flex items-center justify-between w-full px-2 mb-3">
               <div className="flex items-center gap-2">
                  <Languages className="w-4 h-4 text-emerald-600" />
-                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-0.5">App Language</span>
+                 <span className="text-[10px] font-bold text-slate-500 tracking-widest leading-none mt-0.5 font-bengali">অ্যাপের ভাষা</span>
               </div>
               <button 
                 onClick={() => setIsExpanded(false)}

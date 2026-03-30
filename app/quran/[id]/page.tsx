@@ -3,8 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { QuranAyahList } from "@/components/QuranAyahList";
 import { transliterateArabicToBengali } from "@/lib/arabic-to-bengali";
+import fs from "fs";
+import path from "path";
 
 interface Ayah {
+  number: number;
   numberInSurah: number;
   text: string;
 }
@@ -30,25 +33,41 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
   let error: string | null = null;
 
   try {
-    // SSR Fetch: Next.js securely fetches on the backend rendering HTML instantly.
-    const res = await fetch(`https://api.alquran.cloud/v1/surah/${params.id}/editions/quran-uthmani,bn.bengali`, { 
-      next: { revalidate: 3600 * 24 } 
-    });
+    const localPath = path.join(process.cwd(), "public", "data", "quran", "surahs", `${params.id}.json`);
     
-    if (!res.ok) throw new Error("Failed Network Response from AlQuran Cloud");
-
-    const data = await res.json();
-    
-    if (data.code === 200 && data.data && data.data.length === 2) {
-      const arabicData = data.data[0];
-      const bengaliData = data.data[1];
+    if (fs.existsSync(localPath)) {
+      const rawFile = fs.readFileSync(localPath, 'utf8');
+      const data = JSON.parse(rawFile);
+      
+      if (data.code === 200 && data.data && data.data.length === 2) {
+        const arabicData = data.data[0];
+        const bengaliData = data.data[1];
 
       // Map the parallel arrays and generate Bengali Transliteration immediately
-      const mappedAyahs = arabicData.ayahs.map((ayah: any, index: number) => ({
-        arabic: ayah,
-        bengali: bengaliData.ayahs[index],
-        bengaliPhonetic: transliterateArabicToBengali(ayah.text),
-      }));
+      const mappedAyahs = arabicData.ayahs.map((ayah: any, index: number) => {
+        let cleanedArabicText = ayah.text;
+        
+        // Strip Arabic Bismillah from Ayah 1 (except Surah 1 & 9)
+        if (index === 0 && arabicData.number !== 1 && arabicData.number !== 9) {
+           const bismillahPrefix1 = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
+           const bismillahPrefix2 = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+           
+           if (cleanedArabicText.startsWith(bismillahPrefix1)) {
+             cleanedArabicText = cleanedArabicText.substring(bismillahPrefix1.length).trim();
+           } else if (cleanedArabicText.startsWith(bismillahPrefix2)) {
+             cleanedArabicText = cleanedArabicText.substring(bismillahPrefix2.length).trim();
+           } else {
+             // Fallback Regex for any diacritic variation
+             cleanedArabicText = cleanedArabicText.replace(/^ب[\u064B-\u065F]*س[\u064B-\u065F]*م[\u064B-\u065F]*\s+ٱ?ل[\u064B-\u065F]*ل[\u064B-\u065F]*ه[\u064B-\u065F]*\s+ٱ?ل[\u064B-\u065F]*ر[\u064B-\u065F]*ح[\u064B-\u065F]*م[\u064B-\u065F]*[ـٰ]*ن[\u064B-\u065F]*\s+ٱ?ل[\u064B-\u065F]*ر[\u064B-\u065F]*ح[\u064B-\u065F]*ي[\u064B-\u065F]*م[\u064B-\u065F]*\s*/, '').trim();
+           }
+        }
+
+        return {
+          arabic: { ...ayah, text: cleanedArabicText },
+          bengali: bengaliData.ayahs[index],
+          bengaliPhonetic: transliterateArabicToBengali(cleanedArabicText),
+        };
+      });
 
       surah = {
         number: arabicData.number,
@@ -75,12 +94,15 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
           return a;
         })
       };
+      } else {
+        error = "Invalid JSON structure.";
+      }
     } else {
-      error = "Failed to locate surah translations.";
+        error = "Failed to locate local surah data.";
     }
   } catch (err) {
-    console.error("Failed to fetch surah details", err);
-    error = "Network error occurred or API limit reached.";
+    console.error("Failed to read local surah details", err);
+    error = "File system error occurred or data is missing.";
   }
 
   if (error || !surah) {
@@ -90,8 +112,8 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
           <Info className="w-5 h-5" />
           <p className="font-medium">{error || "Surah not found"}</p>
         </div>
-        <Link href="/quran" className="mt-6 text-emerald-600 font-medium hover:underline">
-          Return to Quran Dashboard
+        <Link href="/quran" className="mt-6 text-emerald-600 font-medium hover:underline font-bengali">
+          কুরআন ড্যাশবোর্ডে ফিরে যান
         </Link>
       </div>
     );
@@ -124,8 +146,8 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
             </Link>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{surah.englishName}</h1>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                {surah.englishNameTranslation} • {surah.revelationType === "Meccan" ? "Makki" : "Madani"} • {surah.numberOfAyahs} Ayahs
+              <p className="text-xs sm:text-sm text-slate-500 font-medium font-bengali">
+                {surah.englishNameTranslation} • {surah.revelationType === "Meccan" ? "মাক্কী" : "মাদানী"} • {surah.numberOfAyahs} আয়াত
               </p>
             </div>
           </div>
@@ -149,25 +171,25 @@ export default async function SurahDetailPage(props: { params: Promise<{ id: str
               </div>
             )}
 
-            <QuranAyahList ayahs={surah.ayahs} />
+            <QuranAyahList ayahs={surah.ayahs} surahId={surah.number.toString()} surahName={surah.englishName} />
           </div>
         </div>
 
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-around items-center z-50 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-around items-center z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
         <Link href="/dashboard" className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-500 transition-colors">
-          <Grid className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Dashboard</span>
+          <BookOpen className="w-6 h-6" />
+          <span className="text-[10px] font-bold font-bengali">হোম</span>
         </Link>
         <Link href="/quran" className="flex flex-col items-center gap-1 text-emerald-500">
-          <BookOpen className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Quran</span>
+          <Grid className="w-6 h-6" />
+          <span className="text-[10px] font-bold font-bengali">কুরআন</span>
         </Link>
         <Link href="/hadith" className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-500 transition-colors">
           <BookHeart className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Hadith</span>
+          <span className="text-[10px] font-bold font-bengali">হাদিস</span>
         </Link>
       </nav>
     </div>

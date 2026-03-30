@@ -4,8 +4,9 @@ import { motion } from "motion/react";
 import { 
   BookOpen, Heart, Search, Settings, MapPin, Sun, Sunrise, Sunset, Moon, 
   LogOut, Smartphone, StarHalf, ArrowRight, Bell, Compass, Calendar, 
-  BookHeart, Clock, ChevronRight, PlayCircle, Music, Library
+  BookHeart, Clock, ChevronRight, PlayCircle, Music, Library, ShieldAlert, ScrollText
 } from "lucide-react";
+import { useUser, UserRole } from "@/hooks/use-user";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState("");
+  const [timePhase, setTimePhase] = useState("night");
+  const { tags, toggleTag, isLoaded } = useUser();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -25,11 +28,27 @@ export default function DashboardPage() {
     const updateTime = () => {
       const now = new Date();
       setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      
+      const hour = now.getHours();
+      if (hour >= 4 && hour < 7) setTimePhase("dawn");
+      else if (hour >= 7 && hour < 17) setTimePhase("day");
+      else if (hour >= 17 && hour < 19) setTimePhase("dusk");
+      else setTimePhase("night");
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const getHeroColors = () => {
+    switch(timePhase) {
+      case "dawn": return "from-[#B45309] via-[#D97706] to-[#FBBF24] shadow-amber-900/20";
+      case "day": return "from-[#0369A1] via-[#0EA5E9] to-[#7DD3FC] shadow-sky-900/20";
+      case "dusk": return "from-[#9A3412] via-[#EA580C] to-[#FDBA74] shadow-orange-900/20";
+      case "night":
+      default: return "from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] shadow-blue-900/20";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F7FB] flex flex-col font-sans selection:bg-blue-200 pb-20 lg:pb-8 overflow-x-hidden">
@@ -74,28 +93,28 @@ export default function DashboardPage() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-8 text-white shadow-2xl shadow-blue-900/20 relative overflow-hidden"
+              className={`bg-gradient-to-br ${getHeroColors()} rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-8 text-white shadow-2xl relative overflow-hidden transition-colors duration-1000`}
             >
               {/* Decorative background elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
               <div className="absolute bottom-0 left-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl"></div>
               
               <div className="relative z-10 flex flex-col items-center text-center mb-5 sm:mb-8">
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-sm font-medium mb-2 sm:mb-4 border border-white/10">
-                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> Dhaka, Bangladesh
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-sm font-medium mb-2 sm:mb-4 border border-white/10 font-bengali">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> ঢাকা, বাংলাদেশ
                 </div>
                 <h1 className="text-[2.25rem] leading-none xs:text-5xl sm:text-7xl font-bold tracking-tight mb-1 sm:mb-2 font-mono">{currentTime || "00:00"}</h1>
-                <p className="text-blue-200 text-[10px] sm:text-sm font-medium">Remaining time to Fajr pray: 04:12:30</p>
+                <p className="text-blue-200 text-[10px] sm:text-sm font-medium font-bengali">ফজরের ওয়াক্ত শুরু হতে বাকি: 04:12:30</p>
               </div>
 
               {/* Prayer Timeline */}
               <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-[1.25rem] sm:rounded-3xl p-2 sm:p-4 border border-white/10 flex justify-between items-center overflow-x-auto hide-scrollbar gap-1 sm:gap-4">
                 {[
-                  { name: "Fajr", time: "5:25", icon: Sunrise, active: true },
-                  { name: "Dzuhr", time: "1:30", icon: Sun, active: false },
-                  { name: "Asr", time: "4:45", icon: Sun, active: false },
-                  { name: "Maghrib", time: "5:36", icon: Sunset, active: false },
-                  { name: "Isha", time: "7:45", icon: Moon, active: false },
+                  { name: "ফজর", time: "5:25", icon: Sunrise, active: true },
+                  { name: "যোহর", time: "1:30", icon: Sun, active: false },
+                  { name: "আসর", time: "4:45", icon: Sun, active: false },
+                  { name: "মাগরিব", time: "5:36", icon: Sunset, active: false },
+                  { name: "এশা", time: "7:45", icon: Moon, active: false },
                 ].map((prayer, i) => (
                   <div key={i} className={`flex flex-col items-center min-w-[42px] xs:min-w-[48px] sm:min-w-[60px] p-1.5 sm:p-2 rounded-xl sm:rounded-2xl transition-colors ${prayer.active ? 'bg-white text-blue-900 shadow-lg' : 'text-blue-100 hover:bg-white/5'}`}>
                     <prayer.icon className={`w-4 h-4 sm:w-6 sm:h-6 mb-1 sm:mb-2 ${prayer.active ? 'text-blue-600' : 'text-blue-200'}`} />
@@ -119,11 +138,11 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1">
-                <p className="text-emerald-100 text-[10px] sm:text-sm font-medium mb-0.5 sm:mb-1">Last Read</p>
-                <h3 className="text-xl sm:text-3xl font-bold mb-0.5 sm:mb-1 font-serif">Al-Fatihah</h3>
-                <p className="text-emerald-200 text-[10px] sm:text-sm mb-3 sm:mb-6">Ayah no. 1</p>
-                <Button className="rounded-full bg-white text-emerald-800 hover:bg-emerald-50 font-semibold px-4 sm:px-6 h-8 sm:h-10 text-[10px] sm:text-base shadow-lg">
-                  Continue <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                <p className="text-emerald-100 text-[10px] sm:text-sm font-medium mb-0.5 sm:mb-1 font-bengali">সর্বশেষ পঠিত</p>
+                <h3 className="text-xl sm:text-3xl font-bold mb-0.5 sm:mb-1 font-bengali">আল-ফাতিহা</h3>
+                <p className="text-emerald-200 text-[10px] sm:text-sm mb-3 sm:mb-6 font-bengali">আয়াত নং ১</p>
+                <Button className="rounded-full bg-white text-emerald-800 hover:bg-emerald-50 font-semibold px-4 sm:px-6 h-8 sm:h-10 text-[10px] sm:text-base shadow-lg font-bengali">
+                  পড়া শুরু করুন <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                 </Button>
               </div>
               <div className="relative z-10 hidden xs:block">
@@ -138,8 +157,8 @@ export default function DashboardPage() {
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4 px-1 sm:px-2">
-                <h3 className="text-[1.05rem] sm:text-xl font-bold text-slate-900">Explore</h3>
-                <button className="text-[10px] sm:text-sm font-medium text-[#0066FF] hover:underline">View All</button>
+                <h3 className="text-[1.05rem] sm:text-xl font-bold text-slate-900 font-bengali">এক্সপ্লোর করুন</h3>
+                <button className="text-[10px] sm:text-sm font-medium text-[#0066FF] hover:underline font-bengali">সব দেখুন</button>
               </div>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {/* Card 1 */}
@@ -155,8 +174,8 @@ export default function DashboardPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
-                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Umrah</h4>
-                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2">Hajj essentials</p>
+                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight font-bengali">উমরাহ</h4>
+                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2 font-bengali">হজের প্রয়োজনীয় বিষয়</p>
                   </div>
                   <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
                     <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -175,8 +194,8 @@ export default function DashboardPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#064E3B]/90 via-[#064E3B]/40 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-3 sm:p-5 w-full">
-                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">Rawda</h4>
-                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2">Visit the Rawda</p>
+                    <h4 className="font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight font-bengali">রওজা</h4>
+                    <p className="text-white/80 text-[9px] sm:text-xs line-clamp-1 sm:line-clamp-2 font-bengali">রওজা জিয়ারত</p>
                   </div>
                   <div className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
                     <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -199,14 +218,14 @@ export default function DashboardPage() {
             >
               <div className="grid grid-cols-4 gap-y-4 xs:gap-y-6 gap-x-1 sm:gap-x-2">
                 {[
-                  { name: "Quran", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50", href: "/quran" },
-                  { name: "Calendar", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/calendar" },
-                  { name: "Qibla", icon: Compass, color: "text-amber-600", bg: "bg-amber-50", href: "/dashboard/qibla" },
-                  { name: "Tasbeeh", icon: Clock, color: "text-purple-600", bg: "bg-purple-50", href: "/tasbih" },
-                  { name: "Kalam", icon: Music, color: "text-rose-600", bg: "bg-rose-50", href: "/kalam" },
-                  { name: "Hadith", icon: BookHeart, color: "text-indigo-600", bg: "bg-indigo-50", href: "/hadith" },
-                  { name: "Kitab", icon: Library, color: "text-orange-600", bg: "bg-orange-50", href: "/kitab" },
-                  { name: "More", icon: Settings, color: "text-slate-600", bg: "bg-slate-50", href: "#" },
+                  { name: "কুরআন", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50", href: "/quran" },
+                  { name: "ক্যালেন্ডার", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/calendar" },
+                  { name: "কিবলা", icon: Compass, color: "text-amber-600", bg: "bg-amber-50", href: "/dashboard/qibla" },
+                  { name: "তাসবিহ", icon: Clock, color: "text-purple-600", bg: "bg-purple-50", href: "/tasbih" },
+                  { name: "কালাম", icon: Music, color: "text-rose-600", bg: "bg-rose-50", href: "/kalam" },
+                  { name: "হাদিস", icon: BookHeart, color: "text-indigo-600", bg: "bg-indigo-50", href: "/hadith" },
+                  { name: "কিতাব", icon: Library, color: "text-orange-600", bg: "bg-orange-50", href: "/kitab" },
+                  { name: "আরও", icon: Settings, color: "text-slate-600", bg: "bg-slate-50", href: "#" },
                 ].map((item, i) => (
                   <Link href={item.href} key={i} className="flex flex-col items-center gap-1.5 cursor-pointer group">
                     <div className={`w-9 h-9 xs:w-12 xs:h-12 sm:w-12 sm:h-12 rounded-[0.6rem] xs:rounded-2xl ${item.bg} flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shadow-sm`}>
@@ -226,16 +245,16 @@ export default function DashboardPage() {
               className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Daily Dua</h3>
+                <h3 className="text-[12px] sm:text-sm font-bold text-slate-500 font-bengali tracking-wider">দৈনন্দিন দোয়া</h3>
                 <button className="w-7 h-7 sm:w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100">
                   <PlayCircle className="w-3.5 h-3.5 sm:w-4 h-4" />
                 </button>
               </div>
-              <p className="text-slate-700 font-medium italic mb-3 sm:mb-4 leading-relaxed text-xs sm:text-sm">
-                &quot;Allaahum-maghfir lee thanbee kulluhu, diqqahu wa jilahu, wa&apos;awwalahu wa&apos;aakhirahu wa&apos;alaaniyata hu wa sirrahu.&quot;
+              <p className="text-slate-700 font-medium font-arabic mb-3 sm:mb-4 leading-[1.8] text-right text-lg sm:text-xl" dir="rtl">
+                اللَّهُمَّ اغْفِرْ لِي ذَنْبِي كُلَّهُ دِقَّهُ وَجِلَّهُ وَأَوَّلَهُ وَآخِرَهُ وَعَلَانِيَتَهُ وَسِرَّهُ
               </p>
-              <p className="text-slate-500 text-[10px] sm:text-xs leading-relaxed">
-                O Allah, forgive me all my sins, great and small, the first and the last, those that are apparent and those that are hidden.
+              <p className="text-slate-500 text-[11px] sm:text-xs leading-relaxed font-bengali">
+                হে আল্লাহ, আমার সমস্ত গুনাহ ক্ষমা করে দিন— ছোট অথবা বড়, প্রথম অথবা শেষ, প্রকাশ্য অথবা গোপন।
               </p>
             </motion.div>
 
@@ -246,14 +265,14 @@ export default function DashboardPage() {
               transition={{ delay: 0.5 }}
               className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
             >
-              <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Prayer Tracker</h3>
+              <h3 className="text-[12px] sm:text-sm font-bold text-slate-500 font-bengali tracking-wider mb-4">নামাজের ট্র্যাকার</h3>
               <div className="flex justify-between items-center px-1">
                  {[
-                  { name: "Fajr", done: true },
-                  { name: "Dzuhr", done: true },
-                  { name: "Asr", done: false },
-                  { name: "Maghrib", done: false },
-                  { name: "Isha", done: false },
+                  { name: "ফজর", done: true },
+                  { name: "যোহর", done: true },
+                  { name: "আসর", done: false },
+                  { name: "মাগরিব", done: false },
+                  { name: "এশা", done: false },
                 ].map((prayer, i) => (
                   <div key={i} className="flex flex-col items-center gap-1.5 cursor-pointer">
                     <div className={`w-7 h-7 xs:w-8 xs:h-8 rounded-full flex items-center justify-center border-2 transition-colors ${prayer.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 text-transparent hover:border-emerald-200'}`}>
@@ -268,20 +287,74 @@ export default function DashboardPage() {
             </motion.div>
 
           </div>
+
+          {/* Dev Widget for Roles */}
+          {isLoaded && (
+            <section className="lg:col-span-12 mt-4 bg-rose-50 border border-rose-100 rounded-[2rem] p-6 relative overflow-hidden shadow-sm">
+               <div className="grid grid-cols-2 gap-4 mb-6">
+                 <Link 
+                   href="/hadith"
+                   className="group flex flex-col items-center p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-[2rem] hover:-translate-y-1 transition-all duration-300"
+                 >
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                     <ScrollText className="w-8 h-8 text-indigo-600" />
+                   </div>
+                   <span className="text-xl font-bold text-slate-800 font-bengali">হাদিস</span>
+                   <span className="text-xs text-indigo-600 font-medium font-bengali mt-1">বিশুদ্ধ হাদিস সংগ্রহ</span>
+                 </Link>
+                 
+                 <Link 
+                   href="/hadith"
+                   className="group flex flex-col items-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-[2rem] hover:-translate-y-1 transition-all duration-300"
+                 >
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                     <BookOpen className="w-8 h-8 text-amber-600" />
+                   </div>
+                   <span className="text-xl font-bold text-slate-800 font-bengali">বিষয়ভিত্তিক</span>
+                   <span className="text-xs text-amber-600 font-medium font-bengali mt-1">টপিক ইনডেক্স</span>
+                 </Link>
+               </div>
+               <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-100/50 rounded-full blur-3xl"></div>
+               <div className="flex items-center gap-3 mb-6 relative z-10">
+                 <ShieldAlert className="w-6 h-6 text-rose-500" />
+                 <div>
+                   <h2 className="text-xl font-bold text-slate-800 font-bengali">ডেভেলপার রোল সুইচার</h2>
+                   <p className="text-[11px] sm:text-xs text-slate-500 font-medium font-bengali">ইউজার টাইপ সিমুলেট করতে ট্যাগ পরিবর্তন করুন। শুধুমাত্র "Special" ট্যাগ শিয়া হাদিসের অ্যাক্সেস দেয়।</p>
+                 </div>
+               </div>
+               
+               <div className="flex flex-wrap gap-3 relative z-10">
+                 {(["Staff", "User", "Murid", "Special"] as UserRole[]).map(role => (
+                   <button
+                     key={role}
+                     onClick={() => toggleTag(role)}
+                     className={`px-5 py-2.5 rounded-xl font-bold transition-all border ${
+                       tags.includes(role) 
+                         ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20 border-rose-500' 
+                         : 'bg-white text-slate-600 hover:bg-rose-100 border-rose-200'
+                     }`}
+                   >
+                     {role} {tags.includes(role) && '✓'}
+                   </button>
+                 ))}
+               </div>
+            </section>
+          )}
+
         </div>
       </main>
 
       {/* Bottom Navigation (Mobile Only) */}
       <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200/50 px-4 sm:px-6 py-2.5 sm:py-3 flex justify-between items-center z-50 pb-safe">
          {[
-            { icon: BookOpen, label: "Home", active: true, href: "/dashboard" },
-            { icon: Search, label: "Explore", active: false, href: "#" },
-            { icon: Heart, label: "Favorites", active: false, href: "#" },
-            { icon: Settings, label: "Settings", active: false, href: "#" },
+            { icon: BookOpen, label: "হোম", active: true, href: "/dashboard" },
+            { icon: Search, label: "এক্সপ্লোর", active: false, href: "#" },
+            { icon: Heart, label: "পছন্দনীয়", active: false, href: "#" },
+            { icon: Settings, label: "সেটিংস", active: false, href: "#" },
          ].map((item, i) => (
            <Link href={item.href} key={i} className={`flex flex-col items-center gap-1 cursor-pointer ${item.active ? 'text-[#0066FF]' : 'text-slate-400 hover:text-slate-600'}`}>
              <item.icon className={`w-5 h-5 sm:w-6 h-6 ${item.active ? 'fill-blue-50' : ''}`} />
-             <span className="text-[9px] sm:text-[10px] font-semibold">{item.label}</span>
+             <span className="text-[9px] sm:text-[10px] font-semibold font-bengali">{item.label}</span>
            </Link>
          ))}
       </nav>

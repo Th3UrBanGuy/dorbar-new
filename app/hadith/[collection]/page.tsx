@@ -3,6 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { HadithItemList } from "@/components/HadithItemList";
 import { transliterateArabicToBengali } from "@/lib/arabic-to-bengali";
+import { cookies } from "next/headers";
+import fs from "fs";
+import path from "path";
+import { fetchHadithApiPage } from "@/app/actions/hadith";
+import { SHIA_COLLECTIONS, HADITHAPI_COLLECTIONS, COLLECTION_NAMES } from "@/lib/hadith-collections";
 
 interface HadithData {
   hadithnumber: number;
@@ -15,59 +20,176 @@ interface HadithData {
   };
 }
 
-const COLLECTION_NAMES: Record<string, { en: string, ar: string }> = {
-  bukhari: { en: "Sahih Bukhari", ar: "صحيح البخاري" },
-  muslim: { en: "Sahih Muslim", ar: "صحيح مسلم" },
-  abudawud: { en: "Sunan Abu Dawud", ar: "سنن أبي داود" },
-  tirmidhi: { en: "Jami' At-Tirmidhi", ar: "جامع الترمذي" },
-  nasai: { en: "Sunan An-Nasa'i", ar: "سنن النسائي" },
-  ibnmajah: { en: "Sunan Ibn Majah", ar: "سنن ابن ماجه" },
-  malik: { en: "Muwatta Malik", ar: "موطأ مالك" }
-};
-
 export default async function HadithReaderPage(props: {
   params: Promise<{ collection: string }>;
 }) {
   const params = await props.params;
   
   const collectionId = params.collection;
-  const titles = COLLECTION_NAMES[collectionId] || { en: "Hadith Collection", ar: "الحديث" };
+  const isShiaCollection = SHIA_COLLECTIONS.some(c => c.id === collectionId);
+  const isHadithApi = collectionId.startsWith("hadithapi-");
+  
+  let titles = COLLECTION_NAMES[collectionId] || { en: "Hadith Collection", ar: "الحديث" };
+  let hadithApiBookSlug = "";
+  let hadithApiTotalPages = 1;
+
+  if (isShiaCollection) {
+    const shiaInfo = SHIA_COLLECTIONS.find(c => c.id === collectionId);
+    if (shiaInfo) titles = { en: shiaInfo.name, ar: shiaInfo.arabic };
+  } else if (isHadithApi) {
+    const apiInfo = HADITHAPI_COLLECTIONS.find(c => c.id === collectionId);
+    if (apiInfo) {
+      titles = { en: apiInfo.name, ar: apiInfo.arabic };
+      hadithApiBookSlug = apiInfo.bookSlug;
+    }
+  }
 
   let hadiths: HadithData[] = [];
   let totalHadiths = 0;
   let error = null;
 
   try {
-    const [arRes, bnRes] = await Promise.all([
-      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-${collectionId}.json`, { next: { revalidate: 3600 * 24 } }),
-      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ben-${collectionId}.json`, { next: { revalidate: 3600 * 24 } })
-    ]);
+    if (isShiaCollection) {
+      const cookieStore = await cookies();
+      const tagsCookie = cookieStore.get('dorbar_tags')?.value;
+      let isSpecial = false;
+      if (tagsCookie) {
+        try {
+          const tags = JSON.parse(decodeURIComponent(tagsCookie));
+          isSpecial = tags.includes("Special");
+        } catch(e) {}
+      }
 
-    if (!arRes.ok || !bnRes.ok) throw new Error("Failed to fetch collection data.");
+      if (!isSpecial) {
+         error = "Access Restricted: You need the 'Special' tag via the Developer Widget to view this collection.";
+      } else {
+         const localPath = path.join(process.cwd(), "public", "data", "shia", `${collectionId.toLowerCase()}.json`);
+         
+         if (fs.existsSync(localPath)) {
+            const rawFile = fs.readFileSync(localPath, 'utf8');
+            const data = JSON.parse(rawFile);
+            totalHadiths = data.total || data.data?.length || 0;
+            const rawHadiths = data.data || [];
+            
+            hadiths = rawHadiths.map((item: any, i: number) => ({
+              hadithnumber: item.hadithnumber || i + 1,
+              arabicText: item.arabicText || item.text || item.arabic || "",
+              bengaliPhonetic: item.arabicText ? transliterateArabicToBengali(item.arabicText) : "",
+              bengaliText: item.bengaliText || item.englishText || "Translation unavailable.",
+              reference: item.reference || { book: 1, hadith: i + 1 }
+            }));
+         } else {
+           // Fallback to RapidAPI if local JSON doesn't exist yet
+           const res = await fetch(`https://shiaapi.p.rapidapi.com/book/${collectionId}?range=1-50`, {
+             headers: {
+               'x-rapidapi-host': 'shiaapi.p.rapidapi.com',
+               'x-rapidapi-key': 'b77e32dcc0msha66b1c6155735d0p131b2djsnfe96d1edbf8e'
+             },
+           });
 
-    const arData = await arRes.json();
-    const bnData = await bnRes.json();
+           if (!res.ok) throw new Error("Failed to fetch from ShiaAPI. It may be currently offline or misconfigured in RapidAPI.");
+           
+           const data = await res.json();
+           if (data.messages) throw new Error(`RapidAPI Error: ${data.messages}`);
 
-    if (arData.hadiths && bnData.hadiths) {
-      totalHadiths = arData.hadiths.length;
-      
-      // Map ALL hadiths — LazyList handles progressive rendering on the client
-      hadiths = arData.hadiths.map((arHadith: any, index: number) => {
-        const bnHadith = bnData.hadiths[index];
-        return {
-          hadithnumber: arHadith.hadithnumber,
-          arabicText: arHadith.text,
-          bengaliPhonetic: transliterateArabicToBengali(arHadith.text),
-          bengaliText: bnHadith ? bnHadith.text : "Translation unavailable.",
-          reference: arHadith.reference || { book: 0, hadith: 0 }
-        };
-      });
+           let rawHadiths = Array.isArray(data) ? data : (data.data || []);
+           if (!Array.isArray(rawHadiths)) rawHadiths = [data];
+
+           totalHadiths = rawHadiths.length;
+           hadiths = rawHadiths.map((item: any, i: number) => {
+             const text = typeof item === 'string' ? item : (item.text || item.arabic || item.content || JSON.stringify(item));
+             return {
+               hadithnumber: i + 1,
+               arabicText: text,
+               bengaliPhonetic: transliterateArabicToBengali(text),
+               bengaliText: "Translation unavailable for this restricted API.",
+               reference: { book: 1, hadith: i + 1 }
+             };
+           });
+         }
+      }
+    } else if (isHadithApi) {
+      const localPath = path.join(process.cwd(), "public", "data", "hadithapi", `${hadithApiBookSlug}.json`);
+      if (fs.existsSync(localPath)) {
+         const fileData = fs.readFileSync(localPath, 'utf8');
+         const data = JSON.parse(fileData);
+         totalHadiths = data.data?.length || 0;
+         hadiths = data.data.map((item: any) => ({
+             hadithnumber: Number(item.hadithNumber),
+             arabicText: item.hadithArabic || "Arabic unavailable",
+             bengaliPhonetic: item.hadithArabic ? transliterateArabicToBengali(item.hadithArabic) : "",
+             bengaliText: item.hadithEnglish || item.hadithUrdu || "Translation missing",
+             reference: { book: 1, hadith: Number(item.hadithNumber) }
+         }));
+      } else {
+         const data = await fetchHadithApiPage(hadithApiBookSlug, 1);
+         if (data && data.hadiths) {
+            hadithApiTotalPages = data.hadiths.last_page;
+            totalHadiths = data.hadiths.total;
+            hadiths = data.hadiths.data.map((item: any) => ({
+                hadithnumber: Number(item.hadithNumber),
+                arabicText: item.hadithArabic || "Arabic unavailable",
+                bengaliPhonetic: item.hadithArabic ? transliterateArabicToBengali(item.hadithArabic) : "",
+                bengaliText: item.hadithEnglish || item.hadithUrdu || "Translation missing",
+                reference: { book: 1, hadith: Number(item.hadithNumber) }
+            }));
+         } else {
+            throw new Error("Invalid response from hadithapi.com");
+         }
+      }
     } else {
-      throw new Error("Invalid API format returned.");
+      const arPath = path.join(process.cwd(), "public", "data", "sunni", `ara-${collectionId.toLowerCase()}.json`);
+      const bnPath = path.join(process.cwd(), "public", "data", "sunni", `ben-${collectionId.toLowerCase()}.json`);
+
+      if (fs.existsSync(arPath) && fs.existsSync(bnPath)) {
+        const arData = JSON.parse(fs.readFileSync(arPath, 'utf8'));
+        const bnData = JSON.parse(fs.readFileSync(bnPath, 'utf8'));
+
+        if (arData.hadiths && bnData.hadiths) {
+          totalHadiths = arData.hadiths.length;
+          hadiths = arData.hadiths.map((arHadith: any, index: number) => {
+            const bnHadith = bnData.hadiths[index];
+            return {
+              hadithnumber: arHadith.hadithnumber,
+              arabicText: arHadith.text || "",
+              bengaliPhonetic: arHadith.text ? transliterateArabicToBengali(arHadith.text) : "",
+              bengaliText: bnHadith ? bnHadith.text : "Translation unavailable.",
+              reference: arHadith.reference || { book: 0, hadith: 0 }
+            };
+          });
+        } else { throw new Error("Local JSON format invalid."); }
+      } else {
+        const [arRes, bnRes] = await Promise.all([
+          fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-${collectionId}.json`, { next: { revalidate: 3600 * 24 } }),
+          fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ben-${collectionId}.json`, { next: { revalidate: 3600 * 24 } })
+        ]);
+
+        if (!arRes.ok || !bnRes.ok) throw new Error("Failed to fetch collection data.");
+
+        const arData = await arRes.json();
+        const bnData = await bnRes.json();
+
+        if (arData.hadiths && bnData.hadiths) {
+          totalHadiths = arData.hadiths.length;
+          
+          hadiths = arData.hadiths.map((arHadith: any, index: number) => {
+            const bnHadith = bnData.hadiths[index];
+            return {
+              hadithnumber: arHadith.hadithnumber,
+              arabicText: arHadith.text,
+              bengaliPhonetic: transliterateArabicToBengali(arHadith.text),
+              bengaliText: bnHadith ? bnHadith.text : "Translation unavailable.",
+              reference: arHadith.reference || { book: 0, hadith: 0 }
+            };
+          });
+        } else {
+          throw new Error("Invalid API format returned.");
+        }
+      }
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
-    error = "Error fetching hadith data or collections are missing.";
+    error = err.message || "Error fetching hadith data or collections are missing.";
   }
 
 
@@ -98,8 +220,8 @@ export default async function HadithReaderPage(props: {
             </Link>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{titles.en}</h1>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                {totalHadiths.toLocaleString()} Total Hadiths • SSR Optimized
+              <p className="text-xs sm:text-sm text-slate-500 font-medium font-bengali">
+                {totalHadiths.toLocaleString()} মোট হাদিস • এসএসআর অপ্টিমাইজড
               </p>
             </div>
           </div>
@@ -117,7 +239,14 @@ export default async function HadithReaderPage(props: {
             {error ? (
               <div className="bg-red-50 text-red-500 p-4 rounded-xl font-medium">{error}</div>
             ) : (
-              <HadithItemList hadiths={hadiths} />
+              <HadithItemList 
+                hadiths={hadiths} 
+                collectionId={collectionId} 
+                collectionName={titles.en} 
+                isHadithApi={isHadithApi}
+                hadithApiBookSlug={hadithApiBookSlug}
+                hadithApiTotalPages={hadithApiTotalPages}
+              />
             )}
             
           </div>
@@ -126,18 +255,18 @@ export default async function HadithReaderPage(props: {
       </main>
       
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-around items-center z-50 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-6 py-3 flex justify-around items-center z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
         <Link href="/dashboard" className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-500 transition-colors">
-          <Grid className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Dashboard</span>
+          <BookOpen className="w-6 h-6" />
+          <span className="text-[10px] font-bold font-bengali">হোম</span>
         </Link>
         <Link href="/quran" className="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-500 transition-colors">
-          <BookOpen className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Quran</span>
+          <Grid className="w-6 h-6" />
+          <span className="text-[10px] font-bold font-bengali">কুরআন</span>
         </Link>
         <Link href="/hadith" className="flex flex-col items-center gap-1 text-emerald-500">
           <BookHeart className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Hadith</span>
+          <span className="text-[10px] font-bold font-bengali">হাদিস</span>
         </Link>
       </nav>
     </div>

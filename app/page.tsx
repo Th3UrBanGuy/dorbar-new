@@ -103,8 +103,8 @@ export default function Home() {
             <Link href="/login" className="block w-full text-center">
               <button className="w-full bg-[#1A1A1A] hover:bg-black text-white rounded-full py-4 px-6 font-medium transition-all shadow-lg shadow-black/10 active:scale-[0.98] group">
                 <span className="block text-base mb-0.5">পোর্টাল ড্যাশবোর্ড</span>
-                <span className="block text-[11px] text-white/50 font-normal group-hover:text-white/70 transition-colors">
-                  Enter Portal Dashboard
+                <span className="block text-[11px] text-white/50 font-normal group-hover:text-white/70 transition-colors font-bengali">
+                  পোর্টাল ড্যাশবোর্ডে প্রবেশ করুন
                 </span>
               </button>
             </Link>
@@ -119,8 +119,8 @@ export default function Home() {
               <BookOpen className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-800">Quran Explorer</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Read & Listen</p>
+              <h4 className="font-bold text-slate-800 font-bengali">কুরআন মাজীদ</h4>
+              <p className="text-xs text-slate-500 mt-0.5 font-bengali">পড়ুন এবং শুনুন</p>
             </div>
           </Link>
 
@@ -129,8 +129,8 @@ export default function Home() {
               <BookHeart className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-800">Hadith Collection</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Sahih Bukhari & more</p>
+              <h4 className="font-bold text-slate-800 font-bengali">হাদিস সংকলন</h4>
+              <p className="text-xs text-slate-500 mt-0.5 font-bengali">সহীহ বুখারী এবং আরও</p>
             </div>
           </Link>
 
@@ -139,8 +139,8 @@ export default function Home() {
               <Compass className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-800">Qibla Compass</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Live Direction</p>
+              <h4 className="font-bold text-slate-800 font-bengali">কিবলা কম্পাস</h4>
+              <p className="text-xs text-slate-500 mt-0.5 font-bengali">সরাসরি দিকনির্দেশনা</p>
             </div>
           </Link>
 
@@ -149,8 +149,8 @@ export default function Home() {
               <MapPin className="w-5 h-5 text-rose-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-800">Darbar Events</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Join the Majlis</p>
+              <h4 className="font-bold text-slate-800 font-bengali">দরবারের ইভেন্ট</h4>
+              <p className="text-xs text-slate-500 mt-0.5 font-bengali">মাজলিসে যোগ দিন</p>
             </div>
           </Link>
         </div>

@@ -8,8 +8,8 @@ import Image from "next/image";
 export default function Navbar() {
   const pathname = usePathname();
 
-  // Hide navbar on dashboard, login, tasbih, quran, hadith, kalam, kitab routes
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/quran') || pathname.startsWith('/login') || pathname.startsWith('/tasbih') || pathname.startsWith('/hadith') || pathname.startsWith('/kalam') || pathname.startsWith('/kitab')) {
+  // Hide navbar on dashboard, login, tasbih, quran, hadith, topics, kalam, kitab routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/quran') || pathname.startsWith('/login') || pathname.startsWith('/tasbih') || pathname.startsWith('/hadith') || pathname.startsWith('/topics') || pathname.startsWith('/kalam') || pathname.startsWith('/kitab')) {
     return null;
   }
 
