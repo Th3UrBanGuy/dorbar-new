@@ -36,12 +36,13 @@ export function useAudioCache(ayahGlobalNumbers: number[]) {
   const checkCacheStatus = async (qariId: string) => {
     try {
       const cache = await caches.open('dorbar-quran-audio');
-      let count = 0;
-      for (const num of ayahGlobalNumbers) {
+      const results = await Promise.all(ayahGlobalNumbers.map(async (num) => {
         const url = getAudioUrl(qariId, num);
         const match = await cache.match(url);
-        if (match) count++;
-      }
+        return match ? 1 : 0;
+      }));
+      
+      const count = results.reduce((acc: number, val) => acc + val, 0);
       setDownloadedCount(count);
     } catch (err) {
       console.error(err);

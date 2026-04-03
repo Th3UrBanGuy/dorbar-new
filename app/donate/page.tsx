@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { 
   Heart, Smartphone, Building, ArrowRight, User, Hash, Phone,
-  CalendarDays, Wallet, Banknote, Loader2, Info
+  CalendarDays, Wallet, Banknote, Loader2, Info, CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { saveDonation, DonationRecord } from "@/lib/api/donation";
 import { DonationReceipt } from "@/components/DonationReceipt";
 
 export default function DonatePage() {
@@ -19,9 +18,12 @@ export default function DonatePage() {
   const [senderNumber, setSenderNumber] = useState("");
   const [transactionDate, setTransactionDate] = useState("");
   
+  // New Slip Upload
+  const [slipFile, setSlipFile] = useState<File | null>(null);
+  
   // Submission States
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [receiptData, setReceiptData] = useState<DonationRecord | null>(null);
+  const [receiptData, setReceiptData] = useState<any | null>(null);
   const [error, setError] = useState("");
 
   const handleDonate = async () => {
@@ -42,29 +44,35 @@ export default function DonatePage() {
 
     setIsSubmitting(true);
 
-    const record: DonationRecord = {
-      id: `HNY-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString().slice(-4)}`,
-      donorName,
-      amount,
-      paymentMethod,
-      timestamp: new Date().toISOString()
-    };
+    try {
+      const formData = new FormData();
+      formData.append("donorName", donorName);
+      formData.append("amount", amount.toString());
+      formData.append("paymentMethod", paymentMethod);
+      
+      if (transactionId) formData.append("transactionId", transactionId);
+      if (senderNumber) formData.append("senderNumber", senderNumber);
+      if (transactionDate) formData.append("transactionDate", transactionDate);
+      if (slipFile) formData.append("slip", slipFile);
 
-    if (paymentMethod === "Mobile Banking") {
-      record.transactionId = transactionId;
-      record.senderNumber = senderNumber;
-    } else if (paymentMethod === "Bank Transfer") {
-      record.transactionDate = transactionDate;
-    }
+      const res = await fetch("/api/donations", {
+        method: "POST",
+        body: formData,
+      });
 
-    const success = await saveDonation(record);
-    
-    setIsSubmitting(false);
+      const data = await res.json();
+      
+      setIsSubmitting(false);
 
-    if (success) {
-      setReceiptData(record);
-    } else {
-      setError("সার্ভারে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন। (Make sure JSONBin placeholder is replaced)");
+      if (res.ok && data.success) {
+        setReceiptData(data.donation);
+      } else {
+        setError(data.error || "পার্শ্ববর্তী সার্ভারে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।");
+      }
+    } catch (err) {
+      console.error("Donation submission error:", err);
+      setIsSubmitting(false);
+      setError("নেটওয়ার্ক সমস্যা। দয়া করে ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।");
     }
   };
 
@@ -293,6 +301,38 @@ export default function DonatePage() {
               )}
             </div>
 
+            {/* Slip Upload Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-emerald-500" />
+                পেমেন্ট স্লিপ/রশিদের ছবি (ঐচ্ছিক)
+              </h4>
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setSlipFile(e.target.files?.[0] || null)}
+                  className="hidden" 
+                  id="slip-upload"
+                />
+                <label 
+                  htmlFor="slip-upload"
+                  className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-slate-200 border-dashed rounded-2xl appearance-none cursor-pointer hover:border-emerald-400 focus:outline-none group-hover:bg-slate-50"
+                >
+                  {slipFile ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                      <span className="text-sm font-medium text-slate-600 truncate max-w-[200px]">{slipFile.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Loader2 className="w-8 h-8 text-slate-300 group-hover:text-emerald-400" />
+                      <span className="text-sm font-medium text-slate-500">ছবি সিলেক্ট করুন</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
           </section>
 
           {error && (

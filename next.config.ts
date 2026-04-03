@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   transpilePackages: ['motion'],
+  serverExternalPackages: ['@aws-sdk/client-s3'],
   experimental: {
     turbo: {
       rules: {
@@ -47,6 +48,9 @@ const nextConfig: NextConfig = {
       resolveAlias: {
         // Mirror any aliases here
       },
+    },
+    serverActions: {
+      bodySizeLimit: '500mb',
     },
   },
   webpack: (config, {dev}) => {

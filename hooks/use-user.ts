@@ -1,47 +1,103 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-export type UserRole = "Staff" | "User" | "Murid" | "Special";
+export type UserRole = 'staff' | 'mureed' | 'user';
+
+export interface UserData {
+  id: number;
+  name: string;
+  username: string;
+  role: UserRole;
+  specialAccess: boolean;
+}
 
 export function useUser() {
-  const [tags, setTags] = useState<UserRole[]>(["User"]);
+  const [user, setUser] = useState<UserData | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const match = document.cookie.match(/(^| )dorbar_tags=([^;]+)/);
+    // Read from client-side cookie first for instant hydration
+    const match = document.cookie.match(/(^| )dorbar_user=([^;]+)/);
     if (match) {
       try {
         const parsed = JSON.parse(decodeURIComponent(match[2]));
-        if (Array.isArray(parsed)) {
-          setTags(parsed as UserRole[]);
-        }
+        setUser(parsed as UserData);
       } catch (e) {
-        console.error("Failed to parse tags cookie", e);
+        console.error("Failed to parse user cookie", e);
       }
     }
     setIsLoaded(true);
   }, []);
 
-  const toggleTag = (tag: UserRole) => {
-    let newTags: UserRole[];
-    if (tags.includes(tag)) {
-      newTags = tags.filter(t => t !== tag);
-    } else {
-      newTags = [...tags, tag];
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to refresh user', e);
     }
-    
-    // Ensure "User" is always there as a baseline if everything is removed
-    if (newTags.length === 0) newTags = ["User"];
-    
-    setTags(newTags);
-    document.cookie = `dorbar_tags=${encodeURIComponent(JSON.stringify(newTags))}; path=/; max-age=31536000`;
-    
-    // Dispatch a custom event so other components (like Hadith page) can revalidate if needed
-    window.dispatchEvent(new Event("userTagsChanged"));
+  }, []);
+
+  const toggleSpecialAccess = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/auth/special-access', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !user.specialAccess }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(prev => prev ? { ...prev, specialAccess: data.specialAccess } : null);
+        // Also trigger re-render for other components
+        window.dispatchEvent(new Event('userUpdated'));
+      }
+    } catch (e) {
+      console.error('Failed to toggle special access', e);
+    }
+  }, [user]);
+
+  // Helper booleans
+  const isStaff = user?.role === 'staff';
+  const isMureed = user?.role === 'mureed';
+  const isNormalUser = user?.role === 'user';
+  const hasSpecialAccess = user?.specialAccess === true;
+  const isLoggedIn = user !== null;
+
+  // Legacy compatibility: hasTag keeps old code working
+  const hasTag = useCallback((tag: string): boolean => {
+    if (!user) return false;
+    if (tag === 'Staff') return user.role === 'staff';
+    if (tag === 'Murid') return user.role === 'mureed';
+    if (tag === 'Special') return user.specialAccess === true;
+    if (tag === 'User') return true; // Everyone is a User baseline
+    return false;
+  }, [user]);
+
+  return {
+    user,
+    isLoaded,
+    isLoggedIn,
+    isStaff,
+    isMureed,
+    isNormalUser,
+    hasSpecialAccess,
+    hasTag,
+    refreshUser,
+    toggleSpecialAccess,
+
+    // Legacy compat — tags array for components that expect it
+    tags: user ? [
+      'User' as const,
+      ...(user.role === 'staff' ? ['Staff' as const] : []),
+      ...(user.role === 'mureed' ? ['Murid' as const] : []),
+      ...(user.specialAccess ? ['Special' as const] : []),
+    ] : ['User' as const],
   };
-
-  const hasTag = (tag: UserRole) => tags.includes(tag);
-
-  return { tags, toggleTag, hasTag, isLoaded };
 }

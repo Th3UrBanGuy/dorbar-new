@@ -4,12 +4,33 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Music, Book, ChevronLeft, Search, Play, 
-  Download, ExternalLink, Lock, Clock, Info,
-  AlertCircle, Loader2, Shield
+  Lock, AlertCircle, Loader2, Shield, HardDrive
 } from "lucide-react";
 import Link from "next/link";
-import { getSufiArchive, KalamItem, KitabItem } from "@/lib/api/archive";
 import { Button } from "@/components/ui/button";
+
+interface DbBook {
+  id: number;
+  title: string;
+  author: string;
+  description: string;
+  fileUrl: string;
+  fileSize: number | null;
+  coverColor: string;
+  isMureedOnly: boolean;
+  createdAt: string;
+}
+
+interface DbKalam {
+  id: number;
+  title: string;
+  content: string;
+  writer: string;
+  mediaUrl: string | null;
+  category: string;
+  isMureedOnly: boolean;
+  createdAt: string;
+}
 
 interface SufiArchiveProps {
   initialTab?: "kalam" | "kitab";
@@ -20,17 +41,24 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<{ kalam: KalamItem[], kitab: KitabItem[] }>({ kalam: [], kitab: [] });
+  const [books, setBooks] = useState<DbBook[]>([]);
+  const [kalams, setKalams] = useState<DbKalam[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
-        const result = await getSufiArchive();
-        setData(result);
+
+        const [booksRes, kalamsRes] = await Promise.all([
+          fetch('/api/books').then(r => r.ok ? r.json() : { books: [] }).catch(() => ({ books: [] })),
+          fetch('/api/kalams').then(r => r.ok ? r.json() : { kalams: [] }).catch(() => ({ kalams: [] })),
+        ]);
+
+        setBooks(booksRes.books || []);
+        setKalams(kalamsRes.kalams || []);
         setError(null);
       } catch (err) {
-        setError("তথ্য লোড করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।");
+        setError("তথ্য লোড করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।");
       } finally {
         setLoading(false);
       }
@@ -38,15 +66,21 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
     fetchData();
   }, []);
 
-  const filteredKalam = data.kalam.filter(k => 
+  const filteredKalams = kalams.filter(k => 
     k.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     k.writer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredKitab = data.kitab.filter(k => 
-    k.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    k.author.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBooks = books.filter(b =>
+    b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatFileSize = (bytes: number | null) => {
+    if (!bytes) return '';
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   if (loading) {
     return (
@@ -108,7 +142,7 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
             exit={{ opacity: 0, x: 20 }}
             className="space-y-3 pb-20"
           >
-            {filteredKalam.length > 0 ? filteredKalam.map((kalam, i) => (
+            {filteredKalams.length > 0 ? filteredKalams.map((kalam) => (
               <Link 
                 href={`/kalam/${kalam.id}`} 
                 key={kalam.id}
@@ -124,7 +158,7 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
                         <h4 className="font-bold text-slate-800 line-clamp-1 group-hover:text-emerald-700 transition-colors text-sm sm:text-base">
                           {kalam.title}
                         </h4>
-                        {kalam.is_mureed_only && (
+                        {kalam.isMureedOnly && (
                           <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 bg-amber-50 rounded-full border border-amber-100 text-[8px] sm:text-[9px] font-bold text-amber-700 uppercase tracking-tighter">
                             <Lock className="w-2 sm:w-2.5 h-2 sm:h-2.5" /> Restricted
                           </span>
@@ -140,7 +174,9 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
               </Link>
             )) : (
               <div className="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-slate-100">
-                <p className="text-slate-400 font-bold">কোন কালাম খুঁজে পাওয়া যায়নি।</p>
+                <Music className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-400 font-bold">কোন কালাম খুঁজে পাওয়া যায়নি।</p>
+                <p className="text-xs text-slate-300 mt-1">স্টাফ অ্যাকাউন্ট থেকে কালাম যোগ করুন</p>
               </div>
             )}
           </motion.div>
@@ -150,48 +186,59 @@ export default function SufiArchive({ initialTab = "kalam" }: SufiArchiveProps) 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pb-20"
+            className="space-y-6 pb-20"
           >
-            {filteredKitab.length > 0 ? filteredKitab.map((kitab, i) => (
-              <Link 
-                href={`/kitab/${kitab.id}`} 
-                key={kitab.id}
-                className="bg-white rounded-[2.5rem] p-5 sm:p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-orange-200 transition-all group flex flex-col items-start text-left"
-              >
-                <div className="flex items-start justify-between w-full mb-4 sm:mb-6">
-                  <div className="w-14 h-18 sm:w-16 sm:h-20 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 overflow-hidden relative shadow-inner shrink-0">
-                    <Book className="w-7 h-7 sm:w-8 sm:h-8 relative z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 sm:gap-2">
-                    <span className="px-2.5 py-1 bg-slate-50 rounded-full text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      KITAB
-                    </span>
-                    {kitab.is_mureed_only && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-900 rounded-full text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-tighter">
-                        <Shield className="w-2 sm:w-2.5 h-2 sm:h-2.5" /> মুরিদ এক্সেস
-                      </span>
-                    )}
-                  </div>
-                </div>
+            {filteredBooks.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                {filteredBooks.map((book) => (
+                  <Link 
+                    href={`/kitab/${book.id}/read`} 
+                    key={book.id}
+                    className="bg-white rounded-[2.5rem] p-5 sm:p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-orange-200 transition-all group flex flex-col items-start text-left"
+                  >
+                    <div className="flex items-start justify-between w-full mb-4 sm:mb-6">
+                      <div
+                        className="w-14 h-18 sm:w-16 sm:h-20 rounded-2xl flex items-center justify-center overflow-hidden relative shadow-inner shrink-0"
+                        style={{ backgroundColor: book.coverColor + '15' }}
+                      >
+                        <Book className="w-7 h-7 sm:w-8 sm:h-8 relative z-10" style={{ color: book.coverColor }} />
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 sm:gap-2">
+                        <span className="px-2.5 py-1 bg-orange-50 rounded-full text-[8px] sm:text-[10px] font-bold text-orange-600 uppercase tracking-widest border border-orange-100">
+                          <HardDrive className="w-2.5 h-2.5 inline mr-1" />Cloud
+                        </span>
+                        {book.isMureedOnly && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-900 rounded-full text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-tighter">
+                            <Shield className="w-2 sm:w-2.5 h-2 sm:h-2.5" /> মুরিদ
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 group-hover:text-orange-600 transition-colors line-clamp-1">
-                  {kitab.title}
-                </h3>
-                <p className="text-[10px] sm:text-xs text-slate-500 font-medium mb-4 sm:mb-6">{kitab.author}</p>
-                
-                <div className="mt-auto pt-4 border-t border-slate-50 w-full flex justify-between items-center group/btn">
-                  <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider group-hover/btn:translate-x-1 transition-transform inline-flex items-center gap-1">
-                    বিস্তারিত দেখুন <ChevronLeft className="w-3 h-3 rotate-180" />
-                  </span>
-                  <div className="p-2 text-slate-300 group-hover:text-orange-400 transition-colors">
-                    <Download className="w-4 h-4" />
-                  </div>
-                </div>
-              </Link>
-            )) : (
-              <div className="col-span-1 sm:col-span-2 text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-slate-100">
-                <p className="text-slate-400 font-bold">কোন কিতাব খুঁজে পাওয়া যায়নি।</p>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 group-hover:text-orange-600 transition-colors line-clamp-1">
+                      {book.title}
+                    </h3>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mb-4 sm:mb-6">{book.author}</p>
+                    
+                    <div className="mt-auto pt-4 border-t border-slate-50 w-full flex justify-between items-center group/btn">
+                      <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider group-hover/btn:translate-x-1 transition-transform inline-flex items-center gap-1">
+                        এখনই পড়ুন <ChevronLeft className="w-3 h-3 rotate-180" />
+                      </span>
+                      {book.fileSize && (
+                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-wider">
+                          {formatFileSize(book.fileSize)}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-slate-100">
+                <Book className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-400 font-bold">কোন কিতাব খুঁজে পাওয়া যায়নি।</p>
+                <p className="text-xs text-slate-300 mt-1">স্টাফ অ্যাকাউন্ট থেকে কিতাব আপলোড করুন</p>
               </div>
             )}
           </motion.div>

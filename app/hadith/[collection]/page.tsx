@@ -51,17 +51,22 @@ export default async function HadithReaderPage(props: {
   try {
     if (isShiaCollection) {
       const cookieStore = await cookies();
-      const tagsCookie = cookieStore.get('dorbar_tags')?.value;
+      const authToken = cookieStore.get('dorbar_auth')?.value;
       let isSpecial = false;
-      if (tagsCookie) {
-        try {
-          const tags = JSON.parse(decodeURIComponent(tagsCookie));
-          isSpecial = tags.includes("Special");
-        } catch(e) {}
+
+      if (authToken) {
+        // Also check dorbar_user cookie for specialAccess (set by login/signup)
+        const userCookie = cookieStore.get('dorbar_user')?.value;
+        if (userCookie) {
+          try {
+            const userData = JSON.parse(decodeURIComponent(userCookie));
+            isSpecial = userData.specialAccess === true;
+          } catch(e) {}
+        }
       }
 
       if (!isSpecial) {
-         error = "Access Restricted: You need the 'Special' tag via the Developer Widget to view this collection.";
+         error = "অ্যাক্সেস সীমিত: এই সংগ্রহ দেখতে ড্যাশবোর্ড থেকে 'স্পেশাল অ্যাক্সেস' চালু করুন।";
       } else {
          const localPath = path.join(process.cwd(), "public", "data", "shia", `${collectionId.toLowerCase()}.json`);
          

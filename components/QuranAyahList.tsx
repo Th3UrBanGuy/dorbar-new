@@ -132,46 +132,48 @@ export function QuranAyahList({ ayahs, surahId, surahName }: { ayahs: AyahTuple[
 
   return (
     <div className="flex flex-col gap-8">
-      
-      {/* Downloader & Auto-Play Header */}
-      <div className="flex flex-col gap-4 sticky top-24 sm:top-28 z-40 bg-[#F4F7FB]/90 backdrop-blur-md pt-2 pb-4 px-2 -mx-2">
+      {/* Auto-Play & Search Header */}
+      <div className="flex flex-col gap-4 sticky top-20 sm:top-24 z-40 bg-white/80 backdrop-blur-md pt-2 pb-4 px-2 -mx-2 border-b border-slate-100">
+        
+        {/* Floating Dock component */}
         <AudioDownloader cacheManager={cacheManager} />
         
-        {/* Auto Play Toggle */}
-        <div 
-          className="flex items-center justify-between bg-white px-5 py-4 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-emerald-100 transition-colors" 
-          onClick={() => setIsAutoPlayMode(!isAutoPlayMode)}
-        >
-          <div className="flex flex-col">
-            <h3 className="text-sm font-bold text-slate-800 font-bengali">অটো-প্লে (Auto-Play)</h3>
-            <p className="text-[10px] text-slate-500 font-medium font-bengali mt-0.5">একটির পর একটি আয়াত স্বয়ংক্রিয়ভাবে চলতে থাকবে</p>
-          </div>
-          <div>
-            {isAutoPlayMode ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-300" />}
-          </div>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="relative sticky top-[240px] sm:top-[260px] z-30">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="w-5 h-5 text-emerald-500" />
-        </div>
-        <input
-          type="text"
-          placeholder="আয়াত নম্বর, অর্থ বা শব্দ দিয়ে খুঁজুন..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-10 py-4 bg-white border border-emerald-100 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-bengali text-slate-700 font-medium placeholder:text-slate-400"
-        />
-        {searchQuery && (
-          <button 
-            onClick={() => setSearchQuery("")}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500 transition-colors"
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Auto Play Toggle */}
+          <div 
+            className="flex flex-1 items-center justify-between bg-emerald-50/50 px-4 py-3 rounded-2xl border border-emerald-100/50 cursor-pointer hover:bg-emerald-50 transition-colors" 
+            onClick={() => setIsAutoPlayMode(!isAutoPlayMode)}
           >
-            <X className="w-5 h-5" />
-          </button>
-        )}
+            <div className="flex flex-col">
+              <h3 className="text-[11px] font-bold text-emerald-800 font-bengali">অটো-প্লে (Auto-Play)</h3>
+            </div>
+            <div>
+              {isAutoPlayMode ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-slate-300" />}
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative flex-[2] w-full">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-emerald-500" />
+            </div>
+            <input
+              type="text"
+              placeholder="আয়াত খুঁজুন..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-bengali text-sm text-slate-700 font-medium placeholder:text-slate-400"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {visible.map((ayahTuple) => {

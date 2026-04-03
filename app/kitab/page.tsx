@@ -1,10 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import SufiArchive from "@/components/SufiArchive";
+import BookUploadModal from "@/components/BookUploadModal";
+import { useUser } from "@/hooks/use-user";
 
 export default function KitabListing() {
+  const [showUpload, setShowUpload] = useState(false);
+  const { hasTag } = useUser();
+  const isAdmin = hasTag("Staff");
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans mb-20 sm:mb-0">
       {/* Header */}
@@ -18,11 +25,31 @@ export default function KitabListing() {
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Digital Library Archive</p>
           </div>
         </div>
+
+        {/* Upload button - Admin only */}
+        {isAdmin && (
+          <button
+            onClick={() => setShowUpload(true)}
+            className="h-10 px-5 rounded-full bg-orange-600 text-white flex items-center gap-2 text-xs font-bold hover:bg-orange-700 transition-colors active:scale-95 shadow-lg shadow-orange-200"
+          >
+            <Plus className="w-4 h-4" /> আপলোড
+          </button>
+        )}
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full p-4 sm:p-6">
         <SufiArchive initialTab="kitab" />
       </main>
+
+      {/* Upload Modal */}
+      <BookUploadModal
+        isOpen={showUpload}
+        onClose={() => setShowUpload(false)}
+        onSuccess={() => {
+          // Force page reload to show newly uploaded book
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

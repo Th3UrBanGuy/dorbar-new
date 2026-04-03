@@ -7,14 +7,23 @@ import {
   Share2, Copy, Check, Loader2, AlertCircle,
   Heart, Volume2, SkipBack, SkipForward, Repeat
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { getKalamById, KalamItem } from "@/lib/api/archive";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+
+interface KalamData {
+  id: number;
+  title: string;
+  content: string;
+  writer: string;
+  mediaUrl: string | null;
+  category: string;
+  isMureedOnly: boolean;
+}
 
 export default function KalamDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [kalam, setKalam] = useState<KalamItem | null>(null);
+  const [kalam, setKalam] = useState<KalamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,8 +33,11 @@ export default function KalamDetailPage() {
     async function fetchKalam() {
       try {
         setLoading(true);
-        const data = await getKalamById(Number(id));
-        setKalam(data);
+        const res = await fetch(`/api/kalams/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setKalam(data.kalam);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -60,7 +72,7 @@ export default function KalamDetailPage() {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 text-center">
         <AlertCircle className="w-16 h-16 text-rose-500 mb-4" />
-        <h2 className="text-xl font-bold text-slate-800 mb-2">কালামটি পাওয়া যায়নি</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">কালামটি পাওয়া যায়নি</h2>
         <p className="text-slate-500 mb-6">দুঃখিত, এই কালামটি আমাদের আর্কাইভে নেই অথবা আইডি টি ভুল।</p>
         <Button onClick={() => router.back()} className="bg-emerald-600 rounded-full px-8">ফিরে যান</Button>
       </div>
@@ -70,10 +82,8 @@ export default function KalamDetailPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 pb-20">
       
-      {/* Immersive Dynamic Header/Background */}
       <div className="absolute top-0 left-0 w-full h-80 bg-gradient-to-b from-emerald-600 to-[#F8FAFC] -z-10 opacity-10"></div>
       
-      {/* Top Navbar */}
       <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl px-4 h-16 flex items-center justify-between border-b border-white/20">
         <button 
           onClick={() => router.back()}
@@ -92,7 +102,6 @@ export default function KalamDetailPage() {
 
       <main className="max-w-2xl mx-auto px-4 pt-8">
         
-        {/* Title Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,7 +114,7 @@ export default function KalamDetailPage() {
           <p className="text-emerald-700 font-serif font-bold italic text-lg">{kalam.writer}</p>
         </motion.div>
 
-        {/* Floating Player (Glassmorphism) */}
+        {/* Floating Player */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -113,7 +122,6 @@ export default function KalamDetailPage() {
           className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] p-6 mb-10 shadow-xl shadow-emerald-900/5 border border-white"
         >
           <div className="flex flex-col gap-6">
-            {/* Progress Bar Placeholder */}
             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden relative">
                <div className="absolute left-0 top-0 h-full w-1/3 bg-emerald-500 rounded-full"></div>
             </div>
@@ -135,26 +143,25 @@ export default function KalamDetailPage() {
 
             <div className="flex items-center justify-center gap-10 border-t border-slate-50 pt-6">
                <button className="text-slate-400 hover:text-rose-500 transition-colors">
-                  <Heart className="w-5 h-5" />
+                 <Heart className="w-5 h-5" />
                </button>
                <button className="text-slate-400 hover:text-emerald-600 transition-colors">
-                  <Volume2 className="w-5 h-5" />
+                 <Volume2 className="w-5 h-5" />
                </button>
                <button className="text-slate-400 hover:text-emerald-600 transition-colors">
-                  <Repeat className="w-5 h-5" />
+                 <Repeat className="w-5 h-5" />
                </button>
             </div>
           </div>
         </motion.div>
 
-        {/* Content Section (Poetry) */}
+        {/* Content Section */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="bg-white rounded-[3rem] p-8 sm:p-12 shadow-sm border border-slate-100 relative overflow-hidden"
         >
-          {/* Spiritual watermark background */}
           <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
              <Music className="w-64 h-64 -rotate-12" />
           </div>
@@ -166,7 +173,7 @@ export default function KalamDetailPage() {
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100"
                >
-                 {copied ? <><Check className="w-3 h-3" /> কপি করা হয়েছে</> : <><Copy className="w-3 h-3" /> কপি করুন</>}
+                 {copied ? <><Check className="w-3 h-3" /> কপি করা হয়েছে</> : <><Copy className="w-3 h-3" /> কপি করুন</>}
                </button>
             </div>
 
@@ -176,9 +183,9 @@ export default function KalamDetailPage() {
             
             <div className="mt-16 flex flex-col items-center gap-6">
                <div className="w-12 h-0.5 bg-emerald-100 rounded-full"></div>
-               {kalam.media_url && (
+               {kalam.mediaUrl && (
                 <a 
-                  href={kalam.media_url} 
+                  href={kalam.mediaUrl} 
                   download 
                   className="inline-flex items-center gap-3 px-8 py-4 bg-[#1A1A1A] text-white rounded-full text-sm font-bold shadow-xl shadow-black/10 hover:bg-black transition-all active:scale-95"
                 >

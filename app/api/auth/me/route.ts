@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth';
+
+export async function GET(request: NextRequest) {
+  try {
+    const token = request.cookies.get('dorbar_auth')?.value;
+    if (!token) {
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      user: {
+        id: payload.userId,
+        name: payload.name,
+        username: payload.username,
+        role: payload.role,
+        specialAccess: payload.specialAccess,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json({ user: null }, { status: 500 });
+  }
+}
